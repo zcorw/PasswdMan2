@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { FormEvent, useState } from 'react';
 
+import { ImportExportActions } from '../components/common/ImportExportActions';
 import { mockSessions } from '../data/mockSessions';
 import { createRecoveryCode } from '../features/security/recoveryCode';
 import { encryptVaultKey, generateVaultKey, rewrapEncryptedVaultKey } from '../lib/vaultCrypto';
@@ -122,6 +123,18 @@ export function SettingsPage() {
             <Button variant="contained" onClick={handleCreateRecoveryCode}>
               Create recovery code
             </Button>
+          </Stack>
+        </Paper>
+
+        <Paper variant="outlined" sx={{ borderRadius: appTokens.radii.card, p: 2 }}>
+          <Stack spacing={1.5}>
+            <Typography variant="h3" component="h2">
+              Import / export
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Exported vault files require careful handling even when encrypted.
+            </Typography>
+            <ImportExportActions screen="settings" />
           </Stack>
         </Paper>
 

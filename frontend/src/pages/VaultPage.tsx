@@ -6,6 +6,7 @@ import { Box, Fab, InputAdornment, Stack, TextField, Typography } from '@mui/mat
 import { useNavigate } from 'react-router-dom';
 
 import { IconActionButton } from '../components/common/IconActionButton';
+import { ImportExportActions } from '../components/common/ImportExportActions';
 import { VaultItemCard } from '../components/data-display/VaultItemCard';
 import { mockVaultItems } from '../data/mockVault';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
@@ -44,13 +45,16 @@ export function VaultPage() {
           sx={{ '& .MuiInputBase-root': { bgcolor: 'background.paper' } }}
         />
 
-        <Stack direction="row" justifyContent="flex-end" spacing={1}>
-          <IconActionButton label="Filter vault">
-            <FilterListOutlinedIcon fontSize="small" />
-          </IconActionButton>
-          <IconActionButton label="Sort vault">
-            <SortOutlinedIcon fontSize="small" />
-          </IconActionButton>
+        <Stack direction="row" justifyContent="space-between" spacing={1} alignItems="center">
+          <ImportExportActions screen="vault" />
+          <Stack direction="row" spacing={1}>
+            <IconActionButton label="Filter vault">
+              <FilterListOutlinedIcon fontSize="small" />
+            </IconActionButton>
+            <IconActionButton label="Sort vault">
+              <SortOutlinedIcon fontSize="small" />
+            </IconActionButton>
+          </Stack>
         </Stack>
 
         <Stack spacing={1.5}>
