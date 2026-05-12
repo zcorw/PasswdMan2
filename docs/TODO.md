@@ -89,9 +89,18 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
 
 - [ ] T009 [P1] 实现移动端优先核心 UI
   Goal: 登录、注册、保险库列表、详情、新建/编辑页面完成。
-  Notes: 使用 MUI；使用 route 管理页面跳转；底部导航；单列布局；360px-430px 宽度优先；实现和评审必须对齐当前 Figma 设计稿。
+  Notes: 必须使用 `figma:figma-implement-design` skill 基于当前 Figma 设计稿生成前端页面代码；开始写代码前必须先分析 Figma 设计、识别重复视觉/功能模式、确定可复用组件、确定 MUI 组件映射、确定进入 MUI theme 的颜色/间距/排版/圆角 token；使用 MUI、React Router、TypeScript、Vite；使用 route 管理页面跳转；底部导航；单列布局；360px-430px 宽度优先。
+  Implementation constraints:
+  - 使用 MUI 组件优先，不手写 Button、TextField、Select、Dialog、Tabs、Table、Card、Menu、Drawer、Tooltip、Chip、Avatar、Checkbox、Radio、Switch、Snackbar 等通用组件。
+  - 标准 Figma UI 模式必须映射到对应 MUI 组件；布局优先使用 Box、Stack、Grid、Container、Paper、Divider、AppBar。
+  - 所有文字使用 Typography；样式优先使用 MUI theme token 与 sx；仅在 sx/theme 不足时使用 CSS。
+  - 组件必须模块化，不把 UI 都写进 App.tsx；按 app、pages、layouts、components/common、components/form、components/navigation、components/data-display、features、hooks、types、utils 方向组织。
+  - 重复 UI 必须抽成可复用组件；组件 props 必须有 TypeScript interface，并通过 props 控制内容、变体、图标、动作和状态。
+  - 尽量保持 Figma 的视觉层级、间距、排版、颜色和布局；使用 MUI breakpoints 做响应式。
+  - Figma 中重复的颜色、间距、排版、shape 样式应进入 MUI theme；优先使用 MUI 变体和 theme customization，减少硬编码。
+  - 图标优先使用 `@mui/icons-material`，只有没有合适 MUI icon 时才使用自定义 SVG。
   Depends on: T004, T008.
-  Verify: 移动端视口无溢出，核心流程可完成。
+  Verify: Implement Design workflow 已完成设计分析与代码生成；移动端视口无溢出；核心流程可完成；前端代码模块化且可在 Vite React 项目运行。
 
 - [ ] T010 [P1] 实现详情页图标操作规则
   Goal: 详情页字段操作符合设计要求。
