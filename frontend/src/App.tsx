@@ -1,18 +1,57 @@
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { Box, Button, Chip, Container, Paper, Stack, Typography } from '@mui/material';
+import LoginIcon from '@mui/icons-material/Login';
+import {
+  Box,
+  Button,
+  Checkbox,
+  Container,
+  FormControlLabel,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { FormEvent, useEffect, useState } from 'react';
 
-const statusItems = [
-  'PWA shell ready',
-  'FastAPI backend skeleton',
-  'Docker Compose baseline',
-];
+import {
+  clearRememberedAccount,
+  loadRememberedAccount,
+  saveRememberedAccount,
+} from './lib/rememberAccount';
 
 export default function App() {
+  const [identifier, setIdentifier] = useState('');
+  const [rememberAccount, setRememberAccount] = useState(false);
+
+  useEffect(() => {
+    const remembered = loadRememberedAccount();
+    if (remembered) {
+      setIdentifier(remembered);
+      setRememberAccount(true);
+    }
+  }, []);
+
+  function handleRememberChange(checked: boolean) {
+    setRememberAccount(checked);
+    if (!checked) {
+      clearRememberedAccount();
+    }
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (rememberAccount) {
+      saveRememberedAccount(identifier);
+    } else {
+      clearRememberedAccount();
+    }
+  }
+
   return (
     <Box className="app-shell">
-      <Container maxWidth="sm" sx={{ py: 4 }}>
-        <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', p: 3 }}>
-          <Stack spacing={3}>
+      <Container maxWidth="xs" sx={{ px: 2, py: 3 }}>
+        <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', p: 2.5 }}>
+          <Stack component="form" spacing={3} onSubmit={handleSubmit}>
             <Stack direction="row" spacing={1.5} alignItems="center">
               <Box className="brand-mark" aria-hidden="true">
                 <LockOutlinedIcon fontSize="small" />
@@ -22,25 +61,33 @@ export default function App() {
                   PasswdMan2
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Personal password manager PWA skeleton
+                  Sign in to your encrypted vault
                 </Typography>
               </Box>
             </Stack>
 
-            <Typography variant="body1">
-              This build contains only the project shell for the MVP. Authentication, vault
-              encryption, password records, audit logs, and settings will be implemented in later
-              TodoList tasks.
-            </Typography>
+            <TextField
+              autoComplete="username"
+              fullWidth
+              label="Email"
+              name="email"
+              onChange={(event) => setIdentifier(event.target.value)}
+              type="email"
+              value={identifier}
+            />
 
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              {statusItems.map((item) => (
-                <Chip key={item} label={item} color="primary" variant="outlined" />
-              ))}
-            </Stack>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rememberAccount}
+                  onChange={(event) => handleRememberChange(event.target.checked)}
+                />
+              }
+              label="Remember account"
+            />
 
-            <Button variant="contained" href="/api/health">
-              Check API health
+            <Button endIcon={<LoginIcon />} type="submit" variant="contained">
+              Continue
             </Button>
           </Stack>
         </Paper>

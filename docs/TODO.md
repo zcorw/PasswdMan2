@@ -57,7 +57,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T002, T003.
   Verify: 认证集成测试通过，Cookie 安全属性正确。
 
-- [ ] T005 [P0] 实现“记住账号”
+- [x] T005 [P0] 实现“记住账号”
   Goal: 登录页可记住邮箱或账号名。
   Notes: 只保存 identifier，不保存密码、主密码、token、恢复码或密钥；取消勾选后清除。
   Depends on: T004.
