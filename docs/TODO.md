@@ -37,7 +37,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T001.
   Verify: migration 可执行，基础 API 测试通过。
 
-- [ ] T003 [P0] 实现 X25519 + AES-GCM 通讯模块
+- [x] T003 [P0] 实现 X25519 + AES-GCM 通讯模块
   Goal: 敏感请求和响应可通过应用层加密传输。
   Notes: 服务端公钥接口、key_id、nonce、timestamp、防重放、公钥轮换基础结构。
   Depends on: T002.
