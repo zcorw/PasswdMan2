@@ -10,8 +10,8 @@ export const mockVaultItems: VaultItem[] = [
     category: 'dev',
     updatedAt: 'Saved 2h ago',
     secondaryPasswords: [
-      { id: 'recovery-code', note: 'Recovery code', value: 'gho_recovery_code' },
-      { id: 'deploy-token', note: 'Deploy token', value: 'ghs_deploy_token' },
+      { id: 'recovery-code', note: 'Recovery code', value: 'gho_recovery_code', sortOrder: 0 },
+      { id: 'deploy-token', note: 'Deploy token', value: 'ghs_deploy_token', sortOrder: 1 },
     ],
   },
   {
@@ -22,7 +22,7 @@ export const mockVaultItems: VaultItem[] = [
     primaryPassword: 'stripe-primary-password',
     category: 'finance',
     updatedAt: 'Saved yesterday',
-    secondaryPasswords: [{ id: 'api-backup', note: 'API backup', value: 'sk_backup_value' }],
+    secondaryPasswords: [{ id: 'api-backup', note: 'API backup', value: 'sk_backup_value', sortOrder: 0 }],
   },
   {
     id: 'aws',

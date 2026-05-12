@@ -2,6 +2,7 @@ export interface SecondaryPassword {
   id: string;
   note: string;
   value: string;
+  sortOrder: number;
 }
 
 export interface VaultItem {

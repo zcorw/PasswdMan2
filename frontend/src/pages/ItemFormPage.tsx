@@ -5,6 +5,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { SecondaryPasswordEditor } from '../components/form/SecondaryPasswordEditor';
 import { mockVaultItems } from '../data/mockVault';
+import {
+  addSecondaryPassword,
+  deleteSecondaryPassword,
+  moveSecondaryPassword,
+  normalizeSecondaryPasswordOrder,
+  updateSecondaryPassword,
+} from '../features/vault/secondaryPasswords';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
 import { routes } from '../routes';
 import { appTokens } from '../theme';
@@ -17,7 +24,7 @@ export function ItemFormPage() {
   const existingItem = useMemo(() => (itemId ? getVaultItem(mockVaultItems, itemId) : mockVaultItems[0]), [itemId]);
   const isNew = !itemId;
   const [secondaryPasswords, setSecondaryPasswords] = useState<SecondaryPassword[]>(
-    isNew ? [] : existingItem.secondaryPasswords,
+    isNew ? [] : normalizeSecondaryPasswordOrder(existingItem.secondaryPasswords),
   );
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -26,16 +33,11 @@ export function ItemFormPage() {
   }
 
   function updateSecondary(nextPassword: SecondaryPassword) {
-    setSecondaryPasswords((current) =>
-      current.map((password) => (password.id === nextPassword.id ? nextPassword : password)),
-    );
+    setSecondaryPasswords((current) => updateSecondaryPassword(current, nextPassword));
   }
 
-  function addSecondaryPassword() {
-    setSecondaryPasswords((current) => [
-      ...current,
-      { id: `secondary-${current.length + 1}`, note: '', value: '' },
-    ]);
+  function handleAddSecondaryPassword() {
+    setSecondaryPasswords((current) => addSecondaryPassword(current));
   }
 
   return (
@@ -109,21 +111,23 @@ export function ItemFormPage() {
           Secondary passwords
         </Typography>
         <Stack spacing={1.5}>
-          {secondaryPasswords.map((password) => (
+          {secondaryPasswords.map((password, index) => (
             <SecondaryPasswordEditor
               key={password.id}
               password={password}
+              canMoveDown={index < secondaryPasswords.length - 1}
+              canMoveUp={index > 0}
               onChange={updateSecondary}
-              onDelete={() =>
-                setSecondaryPasswords((current) => current.filter((currentPassword) => currentPassword.id !== password.id))
-              }
+              onDelete={() => setSecondaryPasswords((current) => deleteSecondaryPassword(current, password.id))}
+              onMoveDown={() => setSecondaryPasswords((current) => moveSecondaryPassword(current, password.id, 'down'))}
+              onMoveUp={() => setSecondaryPasswords((current) => moveSecondaryPassword(current, password.id, 'up'))}
             />
           ))}
         </Stack>
         <Button
           type="button"
           startIcon={<AddOutlinedIcon />}
-          onClick={addSecondaryPassword}
+          onClick={handleAddSecondaryPassword}
           variant="contained"
           fullWidth
           sx={{

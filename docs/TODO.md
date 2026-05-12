@@ -108,7 +108,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T009.
   Verify: 页面不出现字段级文字按钮 Show / Copy / Edit。
 
-- [ ] T011 [P1] 实现副密码管理与复制
+- [x] T011 [P1] 实现副密码管理与复制
   Goal: 每条记录支持多个副密码和副密码备注。
   Notes: 支持添加、删除、编辑、排序；每条副密码有独立复制入口。
   Depends on: T009, T010.
