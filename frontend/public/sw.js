@@ -1,5 +1,6 @@
-const CACHE_NAME = 'passwdman2-shell-v1';
+const CACHE_NAME = 'passwdman2-shell-v2';
 const APP_SHELL = ['/', '/offline.html', '/manifest.webmanifest', '/icons/icon.svg'];
+const CACHEABLE_DESTINATIONS = new Set(['script', 'style', 'image', 'font', 'manifest']);
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -22,7 +23,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
 
-  if (requestUrl.pathname.startsWith('/api/')) {
+  if (requestUrl.origin !== self.location.origin || requestUrl.pathname.startsWith('/api/')) {
     return;
   }
 
@@ -31,5 +32,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
+  if (CACHEABLE_DESTINATIONS.has(event.request.destination)) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) {
+          return cached;
+        }
+        return fetch(event.request).then((response) => {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          return response;
+        });
+      }),
+    );
+  }
 });

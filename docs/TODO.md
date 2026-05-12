@@ -138,7 +138,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T009, T013.
   Verify: 入口可见，触发后有提示和审计记录。
 
-- [ ] T016 [P1] 实现 PWA 基础能力
+- [x] T016 [P1] 实现 PWA 基础能力
   Goal: Manifest、Service Worker、离线页、安装提示完成。
   Notes: 只缓存应用壳、静态资源和离线页；敏感 API 必须 no-store。
   Depends on: T001, T009.
