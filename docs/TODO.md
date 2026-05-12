@@ -31,7 +31,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: None.
   Verify: 前后端可启动，Docker Compose 可运行，健康检查通过。
 
-- [ ] T002 [P0] 建立后端基础设施
+- [x] T002 [P0] 建立后端基础设施
   Goal: FastAPI 配置、日志、统一响应、统一错误、数据库连接、迁移框架完成。
   Notes: 建立 SQLAlchemy Base、Alembic 环境、请求 ID、Cache-Control 工具。
   Depends on: T001.

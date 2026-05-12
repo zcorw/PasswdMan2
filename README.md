@@ -54,8 +54,11 @@ npm install
 npm run build
 
 cd ..\backend
+python -m pip install -r requirements.txt
 python -m compileall app
 python -c "from app.main import app; print(app.title)"
+pytest
+$env:DATABASE_URL='sqlite:///./.alembic-check.db'; alembic current
 
 cd ..
 docker compose config
