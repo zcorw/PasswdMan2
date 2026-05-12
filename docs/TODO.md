@@ -144,7 +144,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T001, T009.
   Verify: Lighthouse PWA 基础项通过，离线页可访问，敏感响应未缓存。
 
-- [ ] T017 [P1] 补充测试体系
+- [x] T017 [P1] 补充测试体系
   Goal: 覆盖关键安全、API、UI、PWA 场景。
   Notes: 后端 pytest；前端组件测试；Playwright 移动端视口测试；crypto 重放/篡改测试。
   Depends on: T003-T016.

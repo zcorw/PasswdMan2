@@ -66,6 +66,22 @@ cd ..
 docker compose config
 ```
 
+## Test Gates
+
+See `docs/testing.md` for the current test matrix. The core local gates are:
+
+```powershell
+cd backend
+pytest
+
+cd ..\frontend
+yarn test --run
+yarn build
+
+cd ..
+git diff --check
+```
+
 ## Dependency Policy
 
 Use mature, actively maintained third-party libraries when they fit the requirement, license, security posture, and stack. This is especially important for cryptography, password hashing, validation, PWA tooling, and test frameworks. Project-specific business rules and data models remain local implementation work.
