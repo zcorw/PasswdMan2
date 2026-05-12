@@ -82,6 +82,10 @@ cd ..
 git diff --check
 ```
 
+## MVP Boundary
+
+Post-MVP features are tracked in `docs/backlog.md`. Tags, full import/export templates, MFA, WebAuthn, password health scoring, breach detection, browser extensions, and native apps are outside the current MVP acceptance scope.
+
 ## Dependency Policy
 
 Use mature, actively maintained third-party libraries when they fit the requirement, license, security posture, and stack. This is especially important for cryptography, password hashing, validation, PWA tooling, and test frameworks. Project-specific business rules and data models remain local implementation work.

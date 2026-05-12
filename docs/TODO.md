@@ -156,7 +156,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T016, T017.
   Verify: Nginx 可代理 frontend/backend，响应头符合要求。
 
-- [ ] T019 [P2] 整理后续功能 backlog
+- [x] T019 [P2] 整理后续功能 backlog
   Goal: 明确非 MVP 功能边界。
   Notes: CSV 导入导出、tags、MFA、WebAuthn、密码健康评分、泄露检测、浏览器插件。
   Depends on: MVP completion.
