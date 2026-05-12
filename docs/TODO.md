@@ -51,7 +51,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T003.
   Verify: Yarn 4 install/build 通过，文档包含 Figma 对齐要求。
 
-- [ ] T004 [P0] 实现普通用户认证与会话
+- [x] T004 [P0] 实现普通用户认证与会话
   Goal: 注册、登录、退出、当前会话可用。
   Notes: 登录密码强哈希；失败限流；安全 Cookie；不记录敏感明文。
   Depends on: T002, T003.

@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.auth.router import router as auth_router
 from app.crypto.router import router as crypto_router
 from app.logging_config import configure_logging
 from app.middleware import request_context_middleware
@@ -28,6 +29,7 @@ app.add_middleware(
 )
 app.middleware("http")(request_context_middleware)
 app.include_router(crypto_router)
+app.include_router(auth_router)
 
 
 @app.get("/api/health", tags=["system"])
