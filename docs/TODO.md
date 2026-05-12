@@ -87,7 +87,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T008.
   Verify: Yarn test/build 通过，未新增 npm/pnpm lockfile。
 
-- [ ] T009 [P1] 实现移动端优先核心 UI
+- [x] T009 [P1] 实现移动端优先核心 UI
   Goal: 登录、注册、保险库列表、详情、新建/编辑页面完成。
   Notes: 必须使用 `figma:figma-implement-design` skill 基于当前 Figma 设计稿生成前端页面代码；开始写代码前必须先分析 Figma 设计、识别重复视觉/功能模式、确定可复用组件、确定 MUI 组件映射、确定进入 MUI theme 的颜色/间距/排版/圆角 token；使用 MUI、React Router、TypeScript、Vite；使用 route 管理页面跳转；底部导航；单列布局；360px-430px 宽度优先。
   Implementation constraints:
