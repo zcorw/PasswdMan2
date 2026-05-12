@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, field_validator
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
-class AuthPayload(BaseModel):
+class LoginPayload(BaseModel):
     email: str = Field(min_length=3, max_length=320)
     password: str = Field(min_length=12, max_length=256)
 
@@ -22,5 +22,13 @@ class AuthPayload(BaseModel):
         return email
 
 
-def validate_auth_payload(payload: Any) -> AuthPayload:
-    return AuthPayload.model_validate(payload)
+class RegisterPayload(LoginPayload):
+    encrypted_vault_key: str = Field(alias="encryptedVaultKey", min_length=1, max_length=65536)
+
+
+def validate_login_payload(payload: Any) -> LoginPayload:
+    return LoginPayload.model_validate(payload)
+
+
+def validate_register_payload(payload: Any) -> RegisterPayload:
+    return RegisterPayload.model_validate(payload)

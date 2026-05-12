@@ -5,6 +5,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 import app.auth.models  # noqa: F401
+import app.vault.models  # noqa: F401
 from app.db import Base
 
 config = context.config

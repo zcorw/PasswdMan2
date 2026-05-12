@@ -11,6 +11,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 import app.auth.models  # noqa: F401
+import app.vault.models  # noqa: F401
 from app.auth.models import Session as AuthSession
 from app.crypto.transport import (
     ALGORITHM,
@@ -70,8 +71,22 @@ def client(tmp_path):
     app.dependency_overrides.clear()
 
 
-def register(client: TestClient, email: str = "alice@example.com", password: str = "correct horse battery staple"):
-    return client.post("/api/auth/register", json=make_envelope({"email": email, "password": password}))
+def register(
+    client: TestClient,
+    email: str = "alice@example.com",
+    password: str = "correct horse battery staple",
+    encrypted_vault_key: str = "encrypted-vault-key-v1",
+):
+    return client.post(
+        "/api/auth/register",
+        json=make_envelope(
+            {
+                "email": email,
+                "password": password,
+                "encryptedVaultKey": encrypted_vault_key,
+            }
+        ),
+    )
 
 
 def login(client: TestClient, email: str = "alice@example.com", password: str = "correct horse battery staple"):
@@ -84,6 +99,7 @@ def test_register_login_session_and_logout(client) -> None:
     register_response = register(test_client)
     assert register_response.status_code == 201
     assert register_response.json()["data"]["user"]["email"] == "alice@example.com"
+    assert register_response.json()["data"]["vault"]["encryptedVaultKey"] == "encrypted-vault-key-v1"
 
     login_response = login(test_client)
     assert login_response.status_code == 200

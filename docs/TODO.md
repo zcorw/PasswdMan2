@@ -63,7 +63,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T004.
   Verify: 本地存储中只有账号标识。
 
-- [ ] T006 [P0] 实现 Vault 初始化与同步模型
+- [x] T006 [P0] 实现 Vault 初始化与同步模型
   Goal: 用户注册后创建默认个人 Vault，并保存 encrypted_vault_key。
   Notes: 客户端用主密码派生密钥解开 Vault Key；服务端只保存密文。
   Depends on: T003, T004.

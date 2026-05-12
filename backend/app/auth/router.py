@@ -8,8 +8,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DbSession
 
+from app.auth.dependencies import active_session_from_cookie
 from app.auth.models import Session, User
-from app.auth.schemas import validate_auth_payload
+from app.auth.schemas import validate_login_payload, validate_register_payload
 from app.auth.security import (
     create_session_token,
     hash_password,
@@ -22,6 +23,7 @@ from app.crypto.transport import CryptoEnvelopeError, get_nonce_store, get_serve
 from app.db import get_db
 from app.responses import error_response, ok_response
 from app.settings import Settings, get_settings
+from app.vault.models import Vault
 
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -36,39 +38,23 @@ def user_data(user: User) -> dict[str, Any]:
     }
 
 
-def decrypt_auth_payload(request: Request, envelope: dict[str, Any]):
+def registration_vault_data(vault: Vault) -> dict[str, Any]:
+    return {
+        "id": vault.id,
+        "name": vault.name,
+        "encryptedVaultKey": vault.encrypted_vault_key,
+        "revision": vault.revision,
+    }
+
+
+def decrypt_payload(request: Request, envelope: dict[str, Any], validator):
     try:
         decrypted = get_server_key_provider().decrypt_envelope(envelope, get_nonce_store())
-        return validate_auth_payload(decrypted.payload)
+        return validator(decrypted.payload)
     except CryptoEnvelopeError as exc:
         return error_response(request, exc.code, exc.message, 400)
     except ValueError:
         return error_response(request, "INVALID_AUTH_PAYLOAD", "Invalid email or password", 422)
-
-
-def active_session_from_cookie(
-    request: Request,
-    db: DbSession,
-    settings: Settings,
-) -> Session | None:
-    token = request.cookies.get(settings.session_cookie_name)
-    if not token:
-        return None
-
-    session = db.scalar(
-        select(Session)
-        .where(Session.token_hash == hash_session_token(token))
-        .where(Session.status == "active")
-    )
-    if session is None:
-        return None
-
-    if normalize_utc(session.expires_at) <= utc_now() or session.user.status != "active":
-        session.status = "expired"
-        db.commit()
-        return None
-
-    return session
 
 
 @router.post("/register")
@@ -77,7 +63,7 @@ def register(
     envelope: dict[str, Any],
     db: DbSession = Depends(get_db),
 ) -> Response:
-    auth_payload = decrypt_auth_payload(request, envelope)
+    auth_payload = decrypt_payload(request, envelope, validate_register_payload)
     if isinstance(auth_payload, Response):
         return auth_payload
 
@@ -90,13 +76,25 @@ def register(
     )
     db.add(user)
     try:
+        db.flush()
+        vault = Vault(
+            user_id=user.id,
+            name="Personal Vault",
+            encrypted_vault_key=auth_payload.encrypted_vault_key,
+            encrypted_data="",
+            revision=1,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(vault)
         db.commit()
     except IntegrityError:
         db.rollback()
         return error_response(request, "EMAIL_ALREADY_REGISTERED", "Email is already registered", 409)
 
     db.refresh(user)
-    return ok_response(request, {"user": user_data(user)}, status_code=201)
+    db.refresh(vault)
+    return ok_response(request, {"user": user_data(user), "vault": registration_vault_data(vault)}, status_code=201)
 
 
 @router.post("/login")
@@ -106,7 +104,7 @@ def login(
     db: DbSession = Depends(get_db),
     settings: Settings = Depends(get_settings),
 ) -> Response:
-    auth_payload = decrypt_auth_payload(request, envelope)
+    auth_payload = decrypt_payload(request, envelope, validate_login_payload)
     if isinstance(auth_payload, Response):
         return auth_payload
 

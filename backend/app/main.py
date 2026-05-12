@@ -4,6 +4,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.auth.router import router as auth_router
 from app.crypto.router import router as crypto_router
+from app.vault.router import router as vault_router
 from app.logging_config import configure_logging
 from app.middleware import request_context_middleware
 from app.responses import error_response, ok_response
@@ -30,6 +31,7 @@ app.add_middleware(
 app.middleware("http")(request_context_middleware)
 app.include_router(crypto_router)
 app.include_router(auth_router)
+app.include_router(vault_router)
 
 
 @app.get("/api/health", tags=["system"])
