@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { SecondaryPasswordEditor } from '../components/form/SecondaryPasswordEditor';
 import { mockVaultItems } from '../data/mockVault';
+import { generatePassword } from '../features/password-generator/passwordGenerator';
 import {
   addSecondaryPassword,
   deleteSecondaryPassword,
@@ -23,6 +24,7 @@ export function ItemFormPage() {
   const navigate = useNavigate();
   const existingItem = useMemo(() => (itemId ? getVaultItem(mockVaultItems, itemId) : mockVaultItems[0]), [itemId]);
   const isNew = !itemId;
+  const [primaryPassword, setPrimaryPassword] = useState('');
   const [secondaryPasswords, setSecondaryPasswords] = useState<SecondaryPassword[]>(
     isNew ? [] : normalizeSecondaryPasswordOrder(existingItem.secondaryPasswords),
   );
@@ -85,10 +87,13 @@ export function ItemFormPage() {
               name="primaryPassword"
               type="password"
               placeholder={Array.from({ length: 12 }, () => '\u2022').join('')}
+              value={primaryPassword}
+              onChange={(event) => setPrimaryPassword(event.target.value)}
               InputProps={{
                 endAdornment: (
                   <Button
                     type="button"
+                    onClick={() => setPrimaryPassword(generatePassword())}
                     variant="contained"
                     sx={{
                       mr: -1.25,

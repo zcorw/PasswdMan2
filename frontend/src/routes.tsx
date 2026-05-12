@@ -4,6 +4,7 @@ import { ItemDetailPage } from './pages/ItemDetailPage';
 import { ItemFormPage } from './pages/ItemFormPage';
 import { LoginPage } from './pages/LoginPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
+import { PasswordGeneratorPage } from './pages/PasswordGeneratorPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { VaultPage } from './pages/VaultPage';
 
@@ -30,10 +31,7 @@ export function AppRoutes() {
       <Route path={routes.itemNew} element={<ItemFormPage />} />
       <Route path={routes.itemDetail} element={<ItemDetailPage />} />
       <Route path={routes.itemEdit} element={<ItemFormPage />} />
-      <Route
-        path={routes.generator}
-        element={<PlaceholderPage title="Generator" description="Password generator controls are planned for T012." />}
-      />
+      <Route path={routes.generator} element={<PasswordGeneratorPage />} />
       <Route
         path={routes.auditLog}
         element={<PlaceholderPage title="Log" description="Audit log entries are planned for T013." />}
