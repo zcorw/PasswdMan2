@@ -102,7 +102,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T004, T008.
   Verify: Implement Design workflow 已完成设计分析与代码生成；移动端视口无溢出；核心流程可完成；前端代码模块化且可在 Vite React 项目运行。
 
-- [ ] T010 [P1] 实现详情页图标操作规则
+- [x] T010 [P1] 实现详情页图标操作规则
   Goal: 详情页字段操作符合设计要求。
   Notes: URL 只保留外链打开图标；Username 只保留复制图标；密码字段用显示/隐藏和复制图标。
   Depends on: T009.
