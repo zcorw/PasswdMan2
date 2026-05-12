@@ -150,7 +150,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T003-T016.
   Verify: 全量测试通过。
 
-- [ ] T018 [P2] 完成部署加固
+- [x] T018 [P2] 完成部署加固
   Goal: Docker Compose + Nginx 具备可部署基线。
   Notes: HTTPS 终止、反向代理、安全响应头、PWA 文件响应头、环境变量注入、数据库备份说明。
   Depends on: T016, T017.
