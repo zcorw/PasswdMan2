@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query, Request, Response
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session as DbSession
 
+from app.audit.service import record_audit_event
 from app.auth.dependencies import active_session_from_cookie
 from app.auth.security import normalize_utc, utc_now
 from app.crypto.transport import CryptoEnvelopeError, get_nonce_store, get_server_key_provider
@@ -93,6 +94,16 @@ def create_item(
         updated_at=now,
     )
     db.add(item)
+    db.flush()
+    record_audit_event(
+        db,
+        request,
+        user_id=vault.user_id,
+        action="item.created",
+        resource_type="password_item",
+        resource_id=item.id,
+        metadata={"title": item.title, "status": item.status},
+    )
     db.commit()
     db.refresh(item)
 
@@ -200,6 +211,15 @@ def update_item(
     if payload.status is not None:
         item.status = payload.status
     item.updated_at = utc_now()
+    record_audit_event(
+        db,
+        request,
+        user_id=vault.user_id,
+        action="item.updated",
+        resource_type="password_item",
+        resource_id=item.id,
+        metadata={"title": item.title, "status": item.status},
+    )
 
     db.commit()
     db.refresh(item)
@@ -224,6 +244,15 @@ def delete_item(
     item.status = "deleted"
     item.deleted_at = utc_now()
     item.updated_at = item.deleted_at
+    record_audit_event(
+        db,
+        request,
+        user_id=vault.user_id,
+        action="item.deleted",
+        resource_type="password_item",
+        resource_id=item.id,
+        metadata={"title": item.title},
+    )
     db.commit()
 
     return ok_response(request, {"deleted": True})

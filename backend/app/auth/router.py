@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DbSession
 
+from app.audit.service import record_audit_event
 from app.auth.dependencies import active_session_from_cookie
 from app.auth.models import Session, User
 from app.auth.schemas import validate_login_payload, validate_register_payload
@@ -139,6 +140,7 @@ def login(
         created_at=now,
     )
     db.add(session)
+    record_audit_event(db, request, user_id=user.id, action="auth.login", resource_type="session", resource_id=session.id)
     db.commit()
     db.refresh(session)
 
@@ -174,6 +176,14 @@ def logout(
     if session is not None:
         session.status = "revoked"
         session.revoked_at = utc_now()
+        record_audit_event(
+            db,
+            request,
+            user_id=session.user_id,
+            action="auth.logout",
+            resource_type="session",
+            resource_id=session.id,
+        )
         db.commit()
 
     response = ok_response(request, {"loggedOut": True})

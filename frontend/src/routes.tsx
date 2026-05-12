@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
+import { AuditLogPage } from './pages/AuditLogPage';
 import { ItemDetailPage } from './pages/ItemDetailPage';
 import { ItemFormPage } from './pages/ItemFormPage';
 import { LoginPage } from './pages/LoginPage';
@@ -32,10 +33,7 @@ export function AppRoutes() {
       <Route path={routes.itemDetail} element={<ItemDetailPage />} />
       <Route path={routes.itemEdit} element={<ItemFormPage />} />
       <Route path={routes.generator} element={<PasswordGeneratorPage />} />
-      <Route
-        path={routes.auditLog}
-        element={<PlaceholderPage title="Log" description="Audit log entries are planned for T013." />}
-      />
+      <Route path={routes.auditLog} element={<AuditLogPage />} />
       <Route
         path={routes.settings}
         element={<PlaceholderPage title="Settings" description="Security settings are planned for T014." />}
