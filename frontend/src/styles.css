@@ -13,11 +13,6 @@ body {
   background: #f7faf9;
 }
 
-.mobile-shell {
-  background: #f7faf9;
-  min-height: 100vh;
-}
-
 .brand-mark {
   align-items: center;
   background: #0f766e;
@@ -27,32 +22,4 @@ body {
   height: 40px;
   justify-content: center;
   width: 40px;
-}
-
-.bottom-nav {
-  border-radius: 0;
-  bottom: 0;
-  left: 0;
-  position: fixed;
-  right: 0;
-}
-
-.item-list {
-  display: grid;
-  gap: 10px;
-}
-
-.item-row {
-  background: #ffffff;
-  border: 1px solid #dbe5e2;
-  border-radius: 8px;
-  min-height: 86px;
-}
-
-.detail-panel,
-.secondary-row {
-  background: #ffffff;
-  border: 1px solid #dbe5e2;
-  border-radius: 8px;
-  padding: 16px;
 }

@@ -12,17 +12,14 @@ import {
   Typography,
 } from '@mui/material';
 import { FormEvent, useEffect, useState } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 import {
   clearRememberedAccount,
   loadRememberedAccount,
   saveRememberedAccount,
 } from '../lib/rememberAccount';
-import { routes } from '../routes';
 
 export function LoginPage() {
-  const navigate = useNavigate();
   const [identifier, setIdentifier] = useState('');
   const [rememberAccount, setRememberAccount] = useState(false);
 
@@ -48,7 +45,6 @@ export function LoginPage() {
     } else {
       clearRememberedAccount();
     }
-    navigate(routes.vault);
   }
 
   return (
@@ -93,12 +89,6 @@ export function LoginPage() {
             <Button endIcon={<LoginIcon />} type="submit" variant="contained">
               Continue
             </Button>
-            <Typography variant="body2" color="text.secondary">
-              New to PasswdMan2?{' '}
-              <Button component={RouterLink} to={routes.register} variant="text" sx={{ minHeight: 0, p: 0 }}>
-                Create account
-              </Button>
-            </Typography>
           </Stack>
         </Paper>
       </Container>
