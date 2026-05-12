@@ -75,7 +75,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T006.
   Verify: CRUD、分页、搜索、越权访问测试通过。
 
-- [ ] T008 [P1] 实现客户端 Vault 加解密
+- [x] T008 [P1] 实现客户端 Vault 加解密
   Goal: 前端能用 Vault Key 加密/解密密码条目。
   Notes: secret JSON 包含 primaryPassword、secondaryPasswords、note、sortOrder。
   Depends on: T006, T007.
