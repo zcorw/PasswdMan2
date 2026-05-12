@@ -69,7 +69,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T003, T004.
   Verify: 数据库无 Vault Key 明文；新设备输入主密码后可解锁。
 
-- [ ] T007 [P1] 实现密码条目后端 API
+- [x] T007 [P1] 实现密码条目后端 API
   Goal: 支持条目创建、列表、详情、更新、归档、收藏、软删除。
   Notes: encrypted_secret 保存主要密码、副密码、副密码备注等密文；校验 user_id 归属。
   Depends on: T006.
