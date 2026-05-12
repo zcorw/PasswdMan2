@@ -75,6 +75,15 @@ export async function decryptVaultKey(masterPassword: string, encryptedVaultKey:
   return decryptBytes(keyEncryptionKey, envelope);
 }
 
+export async function rewrapEncryptedVaultKey(
+  currentMasterPassword: string,
+  nextMasterPassword: string,
+  encryptedVaultKey: string,
+): Promise<string> {
+  const vaultKey = await decryptVaultKey(currentMasterPassword, encryptedVaultKey);
+  return encryptVaultKey(nextMasterPassword, vaultKey);
+}
+
 export function encryptItemSecret(vaultKey: Uint8Array, secret: PasswordItemSecret): string {
   assertVaultKey(vaultKey);
   const plaintext = textEncoder.encode(JSON.stringify(secret));

@@ -39,6 +39,16 @@ def user_data(user: User) -> dict[str, Any]:
     }
 
 
+def session_data(session: Session) -> dict[str, Any]:
+    return {
+        "id": session.id,
+        "ipAddress": session.ip_address,
+        "userAgent": session.user_agent,
+        "createdAt": normalize_utc(session.created_at).isoformat().replace("+00:00", "Z"),
+        "expiresAt": normalize_utc(session.expires_at).isoformat().replace("+00:00", "Z"),
+    }
+
+
 def registration_vault_data(vault: Vault) -> dict[str, Any]:
     return {
         "id": vault.id,
@@ -217,3 +227,56 @@ def current_session(
             },
         },
     )
+
+
+@router.get("/sessions")
+def list_sessions(
+    request: Request,
+    db: DbSession = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> Response:
+    session = active_session_from_cookie(request, db, settings)
+    if session is None:
+        return error_response(request, "UNAUTHENTICATED", "Authentication required", 401)
+
+    sessions = db.scalars(
+        select(Session)
+        .where(Session.user_id == session.user_id)
+        .where(Session.status == "active")
+        .order_by(Session.created_at.desc())
+    ).all()
+    return ok_response(request, {"sessions": [session_data(item) for item in sessions]})
+
+
+@router.delete("/sessions/{session_id}")
+def revoke_session(
+    session_id: str,
+    request: Request,
+    db: DbSession = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> Response:
+    session = active_session_from_cookie(request, db, settings)
+    if session is None:
+        return error_response(request, "UNAUTHENTICATED", "Authentication required", 401)
+
+    target_session = db.scalar(
+        select(Session)
+        .where(Session.id == session_id)
+        .where(Session.user_id == session.user_id)
+        .where(Session.status == "active")
+    )
+    if target_session is None:
+        return error_response(request, "NOT_FOUND", "Session not found", 404)
+
+    target_session.status = "revoked"
+    target_session.revoked_at = utc_now()
+    record_audit_event(
+        db,
+        request,
+        user_id=session.user_id,
+        action="auth.session_revoked",
+        resource_type="session",
+        resource_id=target_session.id,
+    )
+    db.commit()
+    return ok_response(request, {"revoked": True})

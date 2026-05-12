@@ -126,7 +126,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Depends on: T007, T010, T011.
   Verify: 日志不包含任何敏感明文。
 
-- [ ] T014 [P1] 实现安全设置
+- [x] T014 [P1] 实现安全设置
   Goal: 支持主密码修改、恢复码、活跃会话查看和退出。
   Notes: 修改主密码需要重新加密 Vault Key；恢复码明文只显示一次。
   Depends on: T006, T013.

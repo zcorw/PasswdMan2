@@ -166,3 +166,21 @@ def test_failed_login_lockout(client) -> None:
     locked_response = login(test_client)
     assert locked_response.status_code == 429
     assert locked_response.json()["error"]["code"] == "LOGIN_LOCKED"
+
+
+def test_user_can_list_and_revoke_active_sessions(client) -> None:
+    test_client, SessionLocal = client
+    register(test_client)
+    login(test_client)
+
+    sessions_response = test_client.get("/api/auth/sessions")
+    assert sessions_response.status_code == 200
+    sessions = sessions_response.json()["data"]["sessions"]
+    assert len(sessions) == 1
+
+    revoke_response = test_client.delete(f"/api/auth/sessions/{sessions[0]['id']}")
+    assert revoke_response.status_code == 200
+
+    with SessionLocal() as db:
+        stored_session = db.scalars(select(AuthSession)).one()
+        assert stored_session.status == "revoked"

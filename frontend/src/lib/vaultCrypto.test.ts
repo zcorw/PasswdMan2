@@ -6,6 +6,7 @@ import {
   encryptItemSecret,
   encryptVaultKey,
   generateVaultKey,
+  rewrapEncryptedVaultKey,
   type PasswordItemSecret,
 } from './vaultCrypto';
 
@@ -25,6 +26,21 @@ describe('vaultCrypto', () => {
     const encryptedVaultKey = await encryptVaultKey('main password value', vaultKey);
 
     await expect(decryptVaultKey('wrong password value', encryptedVaultKey)).rejects.toThrow();
+  });
+
+  it('rewraps the same Vault Key with a new master password', async () => {
+    const vaultKey = generateVaultKey();
+    const encryptedVaultKey = await encryptVaultKey('old main password', vaultKey);
+
+    const rewrappedVaultKey = await rewrapEncryptedVaultKey(
+      'old main password',
+      'new main password',
+      encryptedVaultKey,
+    );
+
+    await expect(decryptVaultKey('old main password', rewrappedVaultKey)).rejects.toThrow();
+    const decryptedVaultKey = await decryptVaultKey('new main password', rewrappedVaultKey);
+    expect(Array.from(decryptedVaultKey)).toEqual(Array.from(vaultKey));
   });
 
   it('roundtrips password item secret JSON with secondary passwords', () => {

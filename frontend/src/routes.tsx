@@ -4,9 +4,9 @@ import { AuditLogPage } from './pages/AuditLogPage';
 import { ItemDetailPage } from './pages/ItemDetailPage';
 import { ItemFormPage } from './pages/ItemFormPage';
 import { LoginPage } from './pages/LoginPage';
-import { PlaceholderPage } from './pages/PlaceholderPage';
 import { PasswordGeneratorPage } from './pages/PasswordGeneratorPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { VaultPage } from './pages/VaultPage';
 
 export const routes = {
@@ -34,10 +34,7 @@ export function AppRoutes() {
       <Route path={routes.itemEdit} element={<ItemFormPage />} />
       <Route path={routes.generator} element={<PasswordGeneratorPage />} />
       <Route path={routes.auditLog} element={<AuditLogPage />} />
-      <Route
-        path={routes.settings}
-        element={<PlaceholderPage title="Settings" description="Security settings are planned for T014." />}
-      />
+      <Route path={routes.settings} element={<SettingsPage />} />
       <Route path="*" element={<Navigate to={routes.login} replace />} />
     </Routes>
   );
