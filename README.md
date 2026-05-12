@@ -15,8 +15,9 @@ Frontend:
 
 ```powershell
 cd frontend
-npm install
-npm run dev
+corepack enable
+yarn install
+yarn dev
 ```
 
 Backend:
@@ -44,14 +45,15 @@ Default local URLs:
 
 ```powershell
 node --version
-npm --version
+corepack --version
+yarn --version
 python --version
 docker --version
 docker compose version
 
 cd frontend
-npm install
-npm run build
+yarn install
+yarn build
 
 cd ..\backend
 python -m pip install -r requirements.txt
@@ -67,3 +69,9 @@ docker compose config
 ## Dependency Policy
 
 Use mature, actively maintained third-party libraries when they fit the requirement, license, security posture, and stack. This is especially important for cryptography, password hashing, validation, PWA tooling, and test frameworks. Project-specific business rules and data models remain local implementation work.
+
+## Frontend Rules
+
+- The frontend package manager is Yarn 4. Use `corepack enable` and run frontend commands with `yarn`; do not add npm or pnpm lockfiles.
+- Future frontend UI implementation must align with the current Figma design baseline for layout, component behavior, icon-only detail actions, mobile-first breakpoints, and MUI component mapping.
+- Before reviewing frontend UI tasks, compare the implemented screen against the relevant Figma view and note any intentional differences.

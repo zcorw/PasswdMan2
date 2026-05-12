@@ -17,6 +17,8 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
 ## Questions / Assumptions
 
 - 前端框架默认采用 React + TypeScript + Vite，仍需最终确认。
+- 前端包管理器限定为 Yarn 4；后续前端命令使用 `yarn`，不得新增 npm/pnpm lockfile。
+- 后续前端 UI 开发必须与当前 Figma 设计稿对齐；评审时需要核对对应 Figma 页面、移动端布局、MUI 组件映射和图标交互规则。
 - 登录密码哈希默认采用 Argon2id。
 - 会话默认采用 HttpOnly + Secure + SameSite Cookie。
 - MVP 不实现完整离线保险库。
@@ -42,6 +44,12 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
   Notes: 服务端公钥接口、key_id、nonce、timestamp、防重放、公钥轮换基础结构。
   Depends on: T002.
   Verify: 加密请求成功；重放、篡改、过期 key 被拒绝。
+
+- [x] T003A [P0] 限定前端包管理器与 Figma 对齐规则
+  Goal: 前端包管理器固定为 Yarn 4，并固化后续 UI 开发必须对齐 Figma 设计稿。
+  Notes: 前端命令使用 yarn；不得新增 npm/pnpm lockfile；前端 UI 评审必须核对当前 Figma 设计稿、移动端布局、MUI 映射和图标交互规则。
+  Depends on: T003.
+  Verify: Yarn 4 install/build 通过，文档包含 Figma 对齐要求。
 
 - [ ] T004 [P0] 实现普通用户认证与会话
   Goal: 注册、登录、退出、当前会话可用。
@@ -75,7 +83,7 @@ PasswdMan2 是个人密码管理 PWA。MVP 只做普通用户功能，不做团�
 
 - [ ] T009 [P1] 实现移动端优先核心 UI
   Goal: 登录、注册、保险库列表、详情、新建/编辑页面完成。
-  Notes: 使用 MUI；底部导航；单列布局；360px-430px 宽度优先。
+  Notes: 使用 MUI；底部导航；单列布局；360px-430px 宽度优先；实现和评审必须对齐当前 Figma 设计稿。
   Depends on: T004, T008.
   Verify: 移动端视口无溢出，核心流程可完成。
 
