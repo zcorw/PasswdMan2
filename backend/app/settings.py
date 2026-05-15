@@ -18,6 +18,9 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins(self) -> list[str]:
+        if self.app_env.strip().lower() == "production":
+            return []
+
         return [origin.strip() for origin in self.backend_cors_origins.split(",") if origin.strip()]
 
 
