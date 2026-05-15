@@ -16,7 +16,7 @@ export const appTokens = {
   },
   radii: {
     control: 8,
-    card: 10,
+    card: '10px',
     nav: 12,
     phone: 28,
   },
