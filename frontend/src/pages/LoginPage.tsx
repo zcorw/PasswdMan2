@@ -17,7 +17,7 @@ import {
   saveRememberedAccount,
 } from '../lib/rememberAccount';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
-import { routes } from '../routes';
+import { routes } from '../routePaths';
 import { appTokens } from '../theme';
 
 export function LoginPage() {

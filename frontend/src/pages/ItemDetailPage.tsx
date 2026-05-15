@@ -11,7 +11,7 @@ import { FieldActionRow } from '../components/data-display/FieldActionRow';
 import { SecondaryPasswordRow } from '../components/data-display/SecondaryPasswordRow';
 import { mockVaultItems } from '../data/mockVault';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
-import { routes } from '../routes';
+import { routes } from '../routePaths';
 import { appTokens } from '../theme';
 import { getVaultItem, maskSecret, normalizeExternalUrl } from '../utils/vault';
 

@@ -14,7 +14,7 @@ import {
   updateSecondaryPassword,
 } from '../features/vault/secondaryPasswords';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
-import { routes } from '../routes';
+import { routes } from '../routePaths';
 import { appTokens } from '../theme';
 import type { SecondaryPassword } from '../types/vault';
 import { getVaultItem } from '../utils/vault';

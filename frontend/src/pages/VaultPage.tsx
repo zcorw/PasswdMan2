@@ -10,7 +10,7 @@ import { ImportExportActions } from '../components/common/ImportExportActions';
 import { VaultItemCard } from '../components/data-display/VaultItemCard';
 import { mockVaultItems } from '../data/mockVault';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
-import { routes } from '../routes';
+import { routes } from '../routePaths';
 
 export function VaultPage() {
   const navigate = useNavigate();

@@ -8,19 +8,7 @@ import { PasswordGeneratorPage } from './pages/PasswordGeneratorPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { VaultPage } from './pages/VaultPage';
-
-export const routes = {
-  home: '/',
-  login: '/login',
-  register: '/register',
-  vault: '/vault',
-  itemDetail: '/items/:itemId',
-  itemNew: '/items/new',
-  itemEdit: '/items/:itemId/edit',
-  generator: '/generator',
-  auditLog: '/audit-log',
-  settings: '/settings',
-} as const;
+import { routes } from './routePaths';
 
 export function AppRoutes() {
   return (

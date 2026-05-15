@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import routesSource from './routes.tsx?raw';
+import routePathsSource from './routePaths.ts?raw';
 
 describe('application routes', () => {
   it('keeps all MVP mobile pages registered in the route map', () => {
@@ -15,12 +15,12 @@ describe('application routes', () => {
       "auditLog: '/audit-log'",
       "settings: '/settings'",
     ].forEach((routeDefinition) => {
-      expect(routesSource).toContain(routeDefinition);
+      expect(routePathsSource).toContain(routeDefinition);
     });
   });
 
   it('uses parameterized item detail and edit routes for item navigation', () => {
-    expect(routesSource).toContain("itemDetail: '/items/:itemId'");
-    expect(routesSource).toContain("itemEdit: '/items/:itemId/edit'");
+    expect(routePathsSource).toContain("itemDetail: '/items/:itemId'");
+    expect(routePathsSource).toContain("itemEdit: '/items/:itemId/edit'");
   });
 });

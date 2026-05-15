@@ -5,7 +5,7 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import { Box, BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { routes } from '../../routes';
+import { routes } from '../../routePaths';
 import { appTokens } from '../../theme';
 
 const navItems = [

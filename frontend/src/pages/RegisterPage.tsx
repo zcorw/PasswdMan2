@@ -3,7 +3,7 @@ import { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
-import { routes } from '../routes';
+import { routes } from '../routePaths';
 import { appTokens } from '../theme';
 
 export function RegisterPage() {
