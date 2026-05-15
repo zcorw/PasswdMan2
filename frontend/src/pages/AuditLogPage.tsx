@@ -24,9 +24,6 @@ export function AuditLogPage() {
     <MobileAppLayout showBottomNav>
       <Stack spacing={2.5} sx={{ pt: 0.5 }}>
         <Stack spacing={0.75}>
-          <Typography variant="body2" color="text.secondary" fontWeight={500}>
-            Sensitive values are never written here
-          </Typography>
           <Typography variant="h2" component="h1">
             Log
           </Typography>

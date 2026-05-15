@@ -20,9 +20,6 @@ export function VaultPage() {
       <Stack spacing={2.5} sx={{ pt: 0.5 }}>
         <Stack direction="row" alignItems="flex-end" justifyContent="space-between">
           <Stack spacing={0.75}>
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
-              Mobile primary screen
-            </Typography>
             <Typography variant="h2" component="h1">
               Vault
             </Typography>

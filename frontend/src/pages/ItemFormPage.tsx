@@ -47,9 +47,6 @@ export function ItemFormPage() {
       <Stack component="form" spacing={2.5} onSubmit={handleSubmit} sx={{ pt: 0.5 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Stack spacing={0.75}>
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
-              Secondary password editor
-            </Typography>
             <Typography variant="h2" component="h1">
               {isNew ? 'New item' : 'Edit item'}
             </Typography>

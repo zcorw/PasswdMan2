@@ -2,7 +2,6 @@ import { Box, Stack } from '@mui/material';
 import type { ReactNode } from 'react';
 
 import { appTokens } from '../theme';
-import { StatusBar } from '../components/common/StatusBar';
 import { BottomNav } from '../components/navigation/BottomNav';
 
 interface MobileAppLayoutProps {
@@ -34,7 +33,27 @@ export function MobileAppLayout({ children, showBottomNav = false }: MobileAppLa
           position: 'relative',
         }}
       >
-        <StatusBar />
+        <Box
+          component="header"
+          sx={{
+            alignItems: 'center',
+            display: 'flex',
+            flexShrink: 0,
+            height: 64,
+            px: appTokens.layout.pageX,
+          }}
+        >
+          <Box
+            component="img"
+            src="/icons/icon.svg"
+            alt="PasswdMan2"
+            sx={{
+              display: 'block',
+              height: 36,
+              width: 36,
+            }}
+          />
+        </Box>
         <Box
           component="main"
           sx={{

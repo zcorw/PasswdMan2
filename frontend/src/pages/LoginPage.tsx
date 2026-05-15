@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Checkbox,
   FormControl,
@@ -54,10 +53,6 @@ export function LoginPage() {
     <MobileAppLayout>
       <Stack component="form" spacing={3} onSubmit={handleSubmit} sx={{ pt: 0.5 }}>
         <Stack spacing={1.5} sx={{ pt: 0.5 }}>
-          <Typography variant="body2" color="text.secondary" fontWeight={500}>
-            Authentication
-          </Typography>
-          <Box sx={{ height: 28 }} />
           <Typography variant="h1" component="h1">
             PasswdMan2
           </Typography>

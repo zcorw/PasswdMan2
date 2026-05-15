@@ -69,9 +69,6 @@ export function PasswordGeneratorPage() {
     <MobileAppLayout showBottomNav>
       <Stack spacing={2.5} sx={{ pt: 0.5 }}>
         <Stack spacing={0.75}>
-          <Typography variant="body2" color="text.secondary" fontWeight={500}>
-            Offline capable generator
-          </Typography>
           <Typography variant="h2" component="h1">
             Generator
           </Typography>

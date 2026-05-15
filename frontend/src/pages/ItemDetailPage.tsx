@@ -31,9 +31,6 @@ export function ItemDetailPage() {
   return (
     <MobileAppLayout showBottomNav>
       <Stack spacing={2.25} sx={{ pt: 0.5 }}>
-        <Typography variant="body2" color="text.secondary" fontWeight={500}>
-          Main password + secondary passwords
-        </Typography>
         <Button
           variant="text"
           onClick={() => navigate(routes.vault)}

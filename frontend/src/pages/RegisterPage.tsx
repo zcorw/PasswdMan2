@@ -18,10 +18,7 @@ export function RegisterPage() {
     <MobileAppLayout>
       <Stack component="form" spacing={3} onSubmit={handleSubmit} sx={{ pt: 0.5 }}>
         <Stack spacing={1.5}>
-          <Typography variant="body2" color="text.secondary" fontWeight={500}>
-            Authentication
-          </Typography>
-          <Typography variant="h2" component="h1" sx={{ pt: 3 }}>
+          <Typography variant="h2" component="h1">
             Create account
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 320 }}>
