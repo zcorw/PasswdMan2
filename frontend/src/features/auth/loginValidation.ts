@@ -21,8 +21,8 @@ const loginFormSchema = z.object({
   password: z
     .string()
     .min(1, 'Password is required.')
-    .min(12, 'Password must be 12-256 characters.')
-    .max(256, 'Password must be 12-256 characters.'),
+    .min(6, 'Password must be 6-256 characters.')
+    .max(256, 'Password must be 6-256 characters.'),
 });
 
 export function validateLoginForm(values: LoginFormValues): LoginFormErrors {

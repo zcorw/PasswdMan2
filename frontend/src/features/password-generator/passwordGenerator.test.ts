@@ -30,6 +30,12 @@ describe('password generator', () => {
     expect(password).toHaveLength(16);
   });
 
+  it('allows six character passwords', () => {
+    const password = generatePassword({ ...baseOptions, length: 6 }, createRandomSource([1, 2, 3, 4, 5]));
+
+    expect(password).toHaveLength(6);
+  });
+
   it('honors selected character sets', () => {
     const password = generatePassword(
       {

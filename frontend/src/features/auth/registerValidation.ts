@@ -23,13 +23,13 @@ const registerFormSchema = z.object({
   masterPassword: z
     .string()
     .min(1, 'Master password is required.')
-    .min(12, 'Master password must be 12-256 characters.')
-    .max(256, 'Master password must be 12-256 characters.'),
+    .min(6, 'Master password must be 6-256 characters.')
+    .max(256, 'Master password must be 6-256 characters.'),
   password: z
     .string()
     .min(1, 'Password is required.')
-    .min(12, 'Password must be 12-256 characters.')
-    .max(256, 'Password must be 12-256 characters.'),
+    .min(6, 'Password must be 6-256 characters.')
+    .max(256, 'Password must be 6-256 characters.'),
 });
 
 export function validateRegisterForm(values: RegisterFormValues): RegisterFormErrors {

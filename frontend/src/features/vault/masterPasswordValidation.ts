@@ -19,8 +19,8 @@ const masterPasswordFormSchema = z
     nextMasterPassword: z
       .string()
       .min(1, 'New master password is required.')
-      .min(12, 'New master password must be 12-256 characters.')
-      .max(256, 'New master password must be 12-256 characters.'),
+      .min(6, 'New master password must be 6-256 characters.')
+      .max(256, 'New master password must be 6-256 characters.'),
   })
   .refine((values) => values.nextMasterPassword === values.confirmMasterPassword, {
     message: 'Master passwords do not match.',

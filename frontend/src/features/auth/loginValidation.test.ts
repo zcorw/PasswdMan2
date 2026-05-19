@@ -14,9 +14,9 @@ describe('loginValidation', () => {
   });
 
   it('validates email format and password length', () => {
-    expect(validateLoginForm({ email: 'invalid', password: 'short' })).toEqual({
+    expect(validateLoginForm({ email: 'invalid', password: '12345' })).toEqual({
       email: 'Enter a valid email address.',
-      password: 'Password must be 12-256 characters.',
+      password: 'Password must be 6-256 characters.',
     });
   });
 
@@ -30,4 +30,3 @@ describe('loginValidation', () => {
     expect(hasLoginFormErrors(errors)).toBe(false);
   });
 });
-

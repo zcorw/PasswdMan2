@@ -194,6 +194,36 @@ def test_item_create_and_update_require_encrypted_payload(client) -> None:
     assert plain_update.json()["error"]["code"] == "INVALID_ALGORITHM"
 
 
+def test_item_title_rejects_whitespace_after_trimming(client) -> None:
+    test_client, _ = client
+    register(test_client)
+    login(test_client)
+
+    create_response = test_client.post(
+        "/api/items",
+        json=make_envelope(
+            {
+                "title": "   ",
+                "encryptedSecret": "encrypted-secret",
+            }
+        ),
+    )
+    assert create_response.status_code == 422
+    assert create_response.json()["error"]["code"] == "INVALID_ITEM_PAYLOAD"
+
+    item = create_item(test_client).json()["data"]["item"]
+    update_response = test_client.patch(
+        f"/api/items/{item['id']}",
+        json=make_envelope(
+            {
+                "title": "   ",
+            }
+        ),
+    )
+    assert update_response.status_code == 422
+    assert update_response.json()["error"]["code"] == "INVALID_ITEM_PAYLOAD"
+
+
 def test_item_access_is_limited_to_owner_vault(client) -> None:
     test_client, _ = client
     register(test_client, email="alice@example.com")

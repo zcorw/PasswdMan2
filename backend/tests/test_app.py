@@ -27,3 +27,16 @@ def test_404_uses_error_envelope() -> None:
     assert body["data"] is None
     assert body["error"]["code"] == "HTTP_ERROR"
     assert body["requestId"] == "req_missing"
+
+
+def test_request_validation_errors_use_error_envelope() -> None:
+    response = client.get("/api/items", params={"pageSize": 0}, headers={"X-Request-ID": "req_validation"})
+
+    assert response.status_code == 422
+    body = response.json()
+    assert body == {
+        "data": None,
+        "error": {"code": "VALIDATION_ERROR", "message": "Invalid request"},
+        "requestId": "req_validation",
+    }
+    assert response.headers["X-Request-ID"] == "req_validation"

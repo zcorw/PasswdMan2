@@ -22,11 +22,11 @@ describe('masterPasswordValidation', () => {
       validateMasterPasswordForm({
         confirmMasterPassword: 'different password',
         currentMasterPassword: 'old master password',
-        nextMasterPassword: 'short',
+        nextMasterPassword: '12345',
       }),
     ).toEqual({
       confirmMasterPassword: 'Master passwords do not match.',
-      nextMasterPassword: 'New master password must be 12-256 characters.',
+      nextMasterPassword: 'New master password must be 6-256 characters.',
     });
   });
 
@@ -41,4 +41,3 @@ describe('masterPasswordValidation', () => {
     expect(hasMasterPasswordFormErrors(errors)).toBe(false);
   });
 });
-

@@ -75,7 +75,7 @@ export function generatePassword(
   options: PasswordGeneratorOptions = defaultPasswordGeneratorOptions,
   randomSource: RandomSource = globalThis.crypto,
 ) {
-  const length = Math.max(8, Math.min(128, Math.floor(options.length)));
+  const length = Math.max(6, Math.min(128, Math.floor(options.length)));
   const selectedSets = getSelectedCharacterSets(options);
   const combinedCharacters = selectedSets.join('');
   const passwordCharacters = selectedSets

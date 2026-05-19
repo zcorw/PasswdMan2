@@ -1,10 +1,15 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
-import { Button, Stack, TextField, Typography } from '@mui/material';
-import { FormEvent, useEffect, useState } from 'react';
+import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
+import { Button, Checkbox, FormControlLabel, Slider, Stack, TextField, Typography } from '@mui/material';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { SecondaryPasswordEditor } from '../components/form/SecondaryPasswordEditor';
-import { generatePassword } from '../features/password-generator/passwordGenerator';
+import {
+  defaultPasswordGeneratorOptions,
+  generatePassword,
+  type PasswordGeneratorOptions,
+} from '../features/password-generator/passwordGenerator';
 import { encryptItemSecret } from '../lib/vaultCrypto';
 import { createItem, getItem, updateItem } from '../features/vault/itemsApi';
 import { mapApiItemToVaultItem } from '../features/vault/itemMapper';
@@ -22,6 +27,16 @@ import { routes } from '../routePaths';
 import { appTokens } from '../theme';
 import type { SecondaryPassword, VaultItem } from '../types/vault';
 
+type PasswordOptionKey = 'useLowercase' | 'useUppercase' | 'useNumbers' | 'useSymbols' | 'excludeAmbiguous';
+
+const passwordOptionLabels: Array<{ key: PasswordOptionKey; label: string }> = [
+  { key: 'useLowercase', label: 'Lowercase' },
+  { key: 'useUppercase', label: 'Uppercase' },
+  { key: 'useNumbers', label: 'Numbers' },
+  { key: 'useSymbols', label: 'Symbols' },
+  { key: 'excludeAmbiguous', label: 'Exclude ambiguous' },
+];
+
 export function ItemFormPage() {
   const { itemId } = useParams();
   const navigate = useNavigate();
@@ -38,6 +53,19 @@ export function ItemFormPage() {
   const [primaryPassword, setPrimaryPassword] = useState('');
   const [secondaryPasswords, setSecondaryPasswords] = useState<SecondaryPassword[]>([]);
   const [formErrors, setFormErrors] = useState<ItemFormErrors>({});
+  const [passwordOptions, setPasswordOptions] = useState<PasswordGeneratorOptions>(defaultPasswordGeneratorOptions);
+  const [passwordOptionsExpanded, setPasswordOptionsExpanded] = useState(false);
+
+  const selectedSetCount = useMemo(
+    () =>
+      [
+        passwordOptions.useLowercase,
+        passwordOptions.useUppercase,
+        passwordOptions.useNumbers,
+        passwordOptions.useSymbols,
+      ].filter(Boolean).length,
+    [passwordOptions],
+  );
 
   useEffect(() => {
     let ignore = false;
@@ -143,6 +171,27 @@ export function ItemFormPage() {
     setSecondaryPasswords((current) => addSecondaryPassword(current));
   }
 
+  function handleGeneratePrimaryPassword(nextOptions = passwordOptions) {
+    try {
+      setPrimaryPassword(generatePassword(nextOptions));
+      setFormErrors((current) => ({ ...current, primaryPassword: undefined }));
+    } catch (error) {
+      setFormErrors((current) => ({
+        ...current,
+        primaryPassword: error instanceof Error ? error.message : 'Unable to generate password.',
+      }));
+    }
+  }
+
+  function handlePasswordLengthChange(_: Event, nextLength: number | number[]) {
+    const length = Array.isArray(nextLength) ? nextLength[0] : nextLength;
+    setPasswordOptions((current) => ({ ...current, length }));
+  }
+
+  function updatePasswordOption(key: PasswordOptionKey, value: boolean) {
+    setPasswordOptions((current) => ({ ...current, [key]: value }));
+  }
+
   return (
     <MobileAppLayout>
       {isLoading ? (
@@ -236,7 +285,7 @@ export function ItemFormPage() {
                 endAdornment: (
                   <Button
                     type="button"
-                    onClick={() => setPrimaryPassword(generatePassword())}
+                    onClick={() => handleGeneratePrimaryPassword()}
                     variant="contained"
                     sx={{
                       mr: -1.25,
@@ -252,6 +301,62 @@ export function ItemFormPage() {
                 ),
               }}
             />
+            <Button
+              type="button"
+              variant="text"
+              endIcon={
+                <ExpandMoreOutlinedIcon
+                  sx={{
+                    transform: passwordOptionsExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 160ms ease',
+                  }}
+                />
+              }
+              onClick={() => setPasswordOptionsExpanded((expanded) => !expanded)}
+              sx={{ alignSelf: 'flex-start', px: 0 }}
+            >
+              Generator settings
+            </Button>
+            {passwordOptionsExpanded ? (
+              <Stack spacing={1.25}>
+                <Stack spacing={1}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                      Length
+                    </Typography>
+                    <Typography variant="body1" fontWeight={700}>
+                      {passwordOptions.length}
+                    </Typography>
+                  </Stack>
+                  <Slider
+                    aria-label="Main password length"
+                    min={6}
+                    max={64}
+                    value={passwordOptions.length}
+                    onChange={handlePasswordLengthChange}
+                  />
+                </Stack>
+                <Stack spacing={0.25}>
+                  {passwordOptionLabels.map((option) => (
+                    <FormControlLabel
+                      key={option.key}
+                      control={
+                        <Checkbox
+                          checked={passwordOptions[option.key]}
+                          disabled={
+                            option.key !== 'excludeAmbiguous' &&
+                            selectedSetCount === 1 &&
+                            passwordOptions[option.key]
+                          }
+                          onChange={(event) => updatePasswordOption(option.key, event.target.checked)}
+                        />
+                      }
+                      label={<Typography variant="body1">{option.label}</Typography>}
+                    />
+                  ))}
+                </Stack>
+              </Stack>
+            ) : null}
           </Stack>
         </Stack>
 

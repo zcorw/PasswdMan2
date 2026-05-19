@@ -124,7 +124,7 @@ export function PasswordGeneratorPage() {
           </Stack>
           <Slider
             aria-label="Password length"
-            min={8}
+            min={6}
             max={64}
             value={options.length}
             onChange={handleLengthChange}

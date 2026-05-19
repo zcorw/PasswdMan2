@@ -15,10 +15,10 @@ describe('registerValidation', () => {
   });
 
   it('validates email, login password, and master password', () => {
-    expect(validateRegisterForm({ email: 'invalid', masterPassword: 'short', password: 'short' })).toEqual({
+    expect(validateRegisterForm({ email: 'invalid', masterPassword: '12345', password: '12345' })).toEqual({
       email: 'Enter a valid email address.',
-      masterPassword: 'Master password must be 12-256 characters.',
-      password: 'Password must be 12-256 characters.',
+      masterPassword: 'Master password must be 6-256 characters.',
+      password: 'Password must be 6-256 characters.',
     });
   });
 
@@ -33,4 +33,3 @@ describe('registerValidation', () => {
     expect(hasRegisterFormErrors(errors)).toBe(false);
   });
 });
-

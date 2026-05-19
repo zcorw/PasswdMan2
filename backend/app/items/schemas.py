@@ -18,7 +18,10 @@ class ItemCreatePayload(BaseModel):
     @field_validator("title")
     @classmethod
     def normalize_title(cls, value: str) -> str:
-        return value.strip()
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("title is required")
+        return normalized
 
     @field_validator("url", "username")
     @classmethod
@@ -42,7 +45,10 @@ class ItemUpdatePayload(BaseModel):
     def normalize_title(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        return value.strip()
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("title is required")
+        return normalized
 
     @field_validator("url", "username")
     @classmethod
