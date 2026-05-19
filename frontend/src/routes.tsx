@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { PublicOnlyRoute } from './features/auth/PublicOnlyRoute';
+import { VaultUnlockedRoute } from './features/vault/VaultUnlockedRoute';
 import { AuditLogPage } from './pages/AuditLogPage';
 import { ItemDetailPage } from './pages/ItemDetailPage';
 import { ItemFormPage } from './pages/ItemFormPage';
@@ -9,6 +10,7 @@ import { LoginPage } from './pages/LoginPage';
 import { PasswordGeneratorPage } from './pages/PasswordGeneratorPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { VaultUnlockPage } from './pages/VaultUnlockPage';
 import { VaultPage } from './pages/VaultPage';
 import { routes } from './routePaths';
 
@@ -36,7 +38,17 @@ export function AppRoutes() {
         path={routes.vault}
         element={
           <ProtectedRoute>
-            <VaultPage />
+            <VaultUnlockedRoute>
+              <VaultPage />
+            </VaultUnlockedRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={routes.vaultUnlock}
+        element={
+          <ProtectedRoute>
+            <VaultUnlockPage />
           </ProtectedRoute>
         }
       />
@@ -44,7 +56,9 @@ export function AppRoutes() {
         path={routes.itemNew}
         element={
           <ProtectedRoute>
-            <ItemFormPage />
+            <VaultUnlockedRoute>
+              <ItemFormPage />
+            </VaultUnlockedRoute>
           </ProtectedRoute>
         }
       />
@@ -52,7 +66,9 @@ export function AppRoutes() {
         path={routes.itemDetail}
         element={
           <ProtectedRoute>
-            <ItemDetailPage />
+            <VaultUnlockedRoute>
+              <ItemDetailPage />
+            </VaultUnlockedRoute>
           </ProtectedRoute>
         }
       />
@@ -60,7 +76,9 @@ export function AppRoutes() {
         path={routes.itemEdit}
         element={
           <ProtectedRoute>
-            <ItemFormPage />
+            <VaultUnlockedRoute>
+              <ItemFormPage />
+            </VaultUnlockedRoute>
           </ProtectedRoute>
         }
       />

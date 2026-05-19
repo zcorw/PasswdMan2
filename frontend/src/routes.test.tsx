@@ -9,6 +9,7 @@ describe('application routes', () => {
       "login: '/login'",
       "register: '/register'",
       "vault: '/vault'",
+      "vaultUnlock: '/vault/unlock'",
       "itemDetail: '/items/:itemId'",
       "itemNew: '/items/new'",
       "itemEdit: '/items/:itemId/edit'",
@@ -28,9 +29,11 @@ describe('application routes', () => {
   it('protects authenticated app routes and keeps auth entry routes public only', () => {
     expect(routesSource).toContain('PublicOnlyRoute');
     expect(routesSource).toContain('ProtectedRoute');
+    expect(routesSource).toContain('VaultUnlockedRoute');
     expect(routesSource).toContain('<LoginPage />');
     expect(routesSource).toContain('<RegisterPage />');
     expect(routesSource).toContain('<VaultPage />');
+    expect(routesSource).toContain('<VaultUnlockPage />');
     expect(routesSource).toContain('<ItemDetailPage />');
     expect(routesSource).toContain('<ItemFormPage />');
     expect(routesSource).toContain('<PasswordGeneratorPage />');

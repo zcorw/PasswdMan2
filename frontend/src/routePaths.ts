@@ -3,6 +3,7 @@ export const routes = {
   login: '/login',
   register: '/register',
   vault: '/vault',
+  vaultUnlock: '/vault/unlock',
   itemDetail: '/items/:itemId',
   itemNew: '/items/new',
   itemEdit: '/items/:itemId/edit',

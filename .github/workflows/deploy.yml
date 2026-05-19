@@ -1,0 +1,199 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: python -m pip install -r requirements.txt
+
+      - name: Run backend tests
+        working-directory: backend
+        run: pytest
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: |
+          corepack enable
+          yarn install --immutable
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: yarn test --run
+
+      - name: Build frontend
+        working-directory: frontend
+        run: yarn build
+
+      - name: Validate Docker Compose configuration
+        run: docker compose config
+
+      - name: Verify frontend build output
+        run: test -d frontend/dist && test -f frontend/dist/index.html
+
+      - name: Create deployment artifact
+        run: |
+          set -euo pipefail
+          rm -rf deploy-artifact
+          mkdir -p deploy-artifact/frontend deploy-artifact/backend deploy-artifact/nginx
+
+          cp docker-compose.yml deploy-artifact/docker-compose.yml
+          cp -R nginx/conf.d deploy-artifact/nginx/conf.d
+
+          cp -R backend/app deploy-artifact/backend/app
+          cp -R backend/alembic deploy-artifact/backend/alembic
+          cp backend/alembic.ini deploy-artifact/backend/alembic.ini
+          cp backend/requirements.txt deploy-artifact/backend/requirements.txt
+          cp backend/Dockerfile deploy-artifact/backend/Dockerfile
+
+          cp -R frontend/dist deploy-artifact/frontend/dist
+          cp frontend/nginx.conf deploy-artifact/frontend/nginx.conf
+          cat > deploy-artifact/frontend/Dockerfile <<'EOF'
+          FROM nginx:1.27-alpine
+          COPY dist /usr/share/nginx/html
+          COPY nginx.conf /etc/nginx/conf.d/default.conf
+          EOF
+
+          cat > deploy-artifact/DEPLOYMENT_ARTIFACT.txt <<EOF
+          PasswdMan2 deployment artifact
+          Commit: ${GITHUB_SHA}
+          Ref: ${GITHUB_REF_NAME}
+          Built at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          This artifact contains the files required to build and run the Docker Compose stack:
+          - docker-compose.yml
+          - backend application, Dockerfile, requirements, and Alembic files
+          - prebuilt frontend/dist and a runtime-only frontend Dockerfile
+          - nginx reverse proxy configuration
+          EOF
+
+          find deploy-artifact -maxdepth 3 -type f | sort
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: passwdman2-deploy-artifact
+          path: deploy-artifact
+          if-no-files-found: error
+
+  deploy:
+    name: Upload to server
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_TARGET_DIR: ${{ secrets.DEPLOY_TARGET_DIR }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      SERVER_RELOAD_COMMAND: ${{ secrets.SERVER_RELOAD_COMMAND }}
+    steps:
+      - name: Download deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: passwdman2-deploy-artifact
+          path: deploy-artifact
+
+      - name: Validate deployment settings
+        run: |
+          set -euo pipefail
+          : "${DEPLOY_HOST:?DEPLOY_HOST secret is required}"
+          : "${DEPLOY_USER:?DEPLOY_USER secret is required}"
+          : "${DEPLOY_SSH_KEY:?DEPLOY_SSH_KEY secret is required}"
+          : "${DEPLOY_TARGET_DIR:?DEPLOY_TARGET_DIR secret is required}"
+
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+          if [[ ! "$DEPLOY_PORT" =~ ^[0-9]+$ ]]; then
+            echo "DEPLOY_PORT must be a numeric port." >&2
+            exit 1
+          fi
+
+          case "$DEPLOY_TARGET_DIR" in
+            "/" | "/home" | "/opt" | "/var" | "/usr" | "/etc" | "/tmp")
+              echo "DEPLOY_TARGET_DIR must be a dedicated project directory, not a system directory." >&2
+              exit 1
+              ;;
+          esac
+
+          if [[ "$DEPLOY_TARGET_DIR" != /* ]]; then
+            echo "DEPLOY_TARGET_DIR must be an absolute path." >&2
+            exit 1
+          fi
+
+          if [[ "$DEPLOY_TARGET_DIR" == *"'"* || "$DEPLOY_TARGET_DIR" == *$'\n'* ]]; then
+            echo "DEPLOY_TARGET_DIR cannot contain quotes or newlines." >&2
+            exit 1
+          fi
+
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+          if [[ -n "$DEPLOY_KNOWN_HOSTS" ]]; then
+            printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" > ~/.ssh/known_hosts
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Upload artifact with rsync
+        run: |
+          set -euo pipefail
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+          SSH_COMMAND="ssh -i ~/.ssh/deploy_key -p ${DEPLOY_PORT} -o StrictHostKeyChecking=yes"
+
+          $SSH_COMMAND "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_TARGET_DIR'"
+
+          rsync -az --checksum --human-readable --itemize-changes \
+            -e "$SSH_COMMAND" \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '__pycache__' \
+            --exclude '.pytest_cache' \
+            deploy-artifact/ \
+            "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_TARGET_DIR/"
+
+      - name: Run optional server reload command
+        if: ${{ env.SERVER_RELOAD_COMMAND != '' }}
+        run: |
+          set -euo pipefail
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "cd '$DEPLOY_TARGET_DIR' && $SERVER_RELOAD_COMMAND"
