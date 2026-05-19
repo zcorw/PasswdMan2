@@ -7,48 +7,120 @@ import {
   Button,
   Chip,
   Paper,
-  Snackbar,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 
 import { ImportExportActions } from '../components/common/ImportExportActions';
-import { mockSessions } from '../data/mockSessions';
+import { PageState } from '../components/common/PageState';
+import { useAuth } from '../features/auth/authStore';
+import { listSessions, mapSessionToView, revokeSession, type ActiveSessionView } from '../features/auth/sessionsApi';
 import { createRecoveryCode } from '../features/security/recoveryCode';
-import { encryptVaultKey, generateVaultKey, rewrapEncryptedVaultKey } from '../lib/vaultCrypto';
+import { useNotification } from '../features/ui/notificationStore';
+import {
+  hasMasterPasswordFormErrors,
+  validateMasterPasswordForm,
+  type MasterPasswordFormErrors,
+} from '../features/vault/masterPasswordValidation';
+import { getVault, syncVault } from '../features/vault/vaultApi';
+import { useVaultKey } from '../features/vault/vaultKeyStore';
+import { rewrapEncryptedVaultKey } from '../lib/vaultCrypto';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
 import { appTokens } from '../theme';
 
 export function SettingsPage() {
+  const { session: currentSession } = useAuth();
+  const { notify } = useNotification();
+  const { encryptedVaultKey, setUnlockedVaultKey, vaultKey } = useVaultKey();
   const [currentMasterPassword, setCurrentMasterPassword] = useState('');
   const [nextMasterPassword, setNextMasterPassword] = useState('');
   const [confirmMasterPassword, setConfirmMasterPassword] = useState('');
+  const [masterPasswordErrors, setMasterPasswordErrors] = useState<MasterPasswordFormErrors>({});
+  const [isChangingMasterPassword, setIsChangingMasterPassword] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
   const [recoveryCodeDismissed, setRecoveryCodeDismissed] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [sessions, setSessions] = useState(mockSessions);
+  const [sessions, setSessions] = useState<ActiveSessionView[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [sessionsError, setSessionsError] = useState('');
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadSessions() {
+      setSessionsLoading(true);
+      setSessionsError('');
+      try {
+        const response = await listSessions();
+        if (!ignore) {
+          setSessions(response.sessions.map((item) => mapSessionToView(item, currentSession?.id)));
+        }
+      } catch (error) {
+        if (!ignore) {
+          setSessionsError(error instanceof Error ? error.message : 'Unable to load active sessions.');
+          setSessions([]);
+        }
+      } finally {
+        if (!ignore) {
+          setSessionsLoading(false);
+        }
+      }
+    }
+
+    void loadSessions();
+
+    return () => {
+      ignore = true;
+    };
+  }, [currentSession?.id]);
 
   async function handleChangeMasterPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!currentMasterPassword || nextMasterPassword !== confirmMasterPassword) {
-      setSnackbarMessage('Check your master password fields.');
+    const nextErrors = validateMasterPasswordForm({
+      confirmMasterPassword,
+      currentMasterPassword,
+      nextMasterPassword,
+    });
+    setMasterPasswordErrors(nextErrors);
+
+    if (hasMasterPasswordFormErrors(nextErrors)) {
       return;
     }
 
-    const demoVaultKey = generateVaultKey();
-    const encryptedVaultKey = await encryptVaultKey(currentMasterPassword, demoVaultKey);
-    await rewrapEncryptedVaultKey(currentMasterPassword, nextMasterPassword, encryptedVaultKey);
-    setSnackbarMessage('Vault Key re-encrypted with the new master password.');
-    setCurrentMasterPassword('');
-    setNextMasterPassword('');
-    setConfirmMasterPassword('');
+    if (!encryptedVaultKey || !vaultKey) {
+      notify('Vault is locked. Unlock the vault before changing the master password.', 'error');
+      return;
+    }
+
+    setIsChangingMasterPassword(true);
+    try {
+      const nextEncryptedVaultKey = await rewrapEncryptedVaultKey(
+        currentMasterPassword,
+        nextMasterPassword,
+        encryptedVaultKey,
+      );
+      const { vault } = await getVault();
+      await syncVault({
+        encryptedData: vault.encryptedData,
+        encryptedVaultKey: nextEncryptedVaultKey,
+      });
+      setUnlockedVaultKey(vaultKey, nextEncryptedVaultKey);
+      notify('Vault Key re-encrypted with the new master password.', 'success');
+      setCurrentMasterPassword('');
+      setNextMasterPassword('');
+      setConfirmMasterPassword('');
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'Unable to change master password.', 'error');
+    } finally {
+      setIsChangingMasterPassword(false);
+    }
   }
 
   function handleCreateRecoveryCode() {
     if (recoveryCodeDismissed) {
-      setSnackbarMessage('Create a new recovery code to view plaintext again.');
+      notify('Create a new recovery code to view plaintext again.', 'info');
       return;
     }
     setRecoveryCode(createRecoveryCode());
@@ -57,6 +129,19 @@ export function SettingsPage() {
   function handleDismissRecoveryCode() {
     setRecoveryCode(null);
     setRecoveryCodeDismissed(true);
+  }
+
+  async function handleRevokeSession(sessionId: string) {
+    setRevokingSessionId(sessionId);
+    try {
+      await revokeSession(sessionId);
+      setSessions((current) => current.filter((item) => item.id !== sessionId));
+      notify('Session signed out.', 'success');
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'Unable to sign out session.', 'error');
+    } finally {
+      setRevokingSessionId(null);
+    }
   }
 
   return (
@@ -69,7 +154,7 @@ export function SettingsPage() {
         </Stack>
 
         <Paper variant="outlined" sx={{ borderRadius: appTokens.radii.card, p: 2 }}>
-          <Stack component="form" spacing={1.5} onSubmit={handleChangeMasterPassword}>
+          <Stack component="form" noValidate spacing={1.5} onSubmit={handleChangeMasterPassword}>
             <Stack direction="row" spacing={1} alignItems="center">
               <KeyOutlinedIcon color="primary" />
               <Typography variant="h3" component="h2">
@@ -78,24 +163,44 @@ export function SettingsPage() {
             </Stack>
             <TextField
               label="Current master password"
+              error={Boolean(masterPasswordErrors.currentMasterPassword)}
+              helperText={masterPasswordErrors.currentMasterPassword}
               type="password"
               value={currentMasterPassword}
-              onChange={(event) => setCurrentMasterPassword(event.target.value)}
+              onChange={(event) => {
+                setCurrentMasterPassword(event.target.value);
+                setMasterPasswordErrors((current) => ({ ...current, currentMasterPassword: undefined }));
+              }}
             />
             <TextField
               label="New master password"
+              error={Boolean(masterPasswordErrors.nextMasterPassword)}
+              helperText={masterPasswordErrors.nextMasterPassword}
               type="password"
               value={nextMasterPassword}
-              onChange={(event) => setNextMasterPassword(event.target.value)}
+              onChange={(event) => {
+                setNextMasterPassword(event.target.value);
+                setMasterPasswordErrors((current) => ({ ...current, nextMasterPassword: undefined }));
+              }}
             />
             <TextField
               label="Confirm new master password"
+              error={Boolean(masterPasswordErrors.confirmMasterPassword)}
+              helperText={masterPasswordErrors.confirmMasterPassword}
               type="password"
               value={confirmMasterPassword}
-              onChange={(event) => setConfirmMasterPassword(event.target.value)}
+              onChange={(event) => {
+                setConfirmMasterPassword(event.target.value);
+                setMasterPasswordErrors((current) => ({ ...current, confirmMasterPassword: undefined }));
+              }}
             />
-            <Button type="submit" variant="contained" startIcon={<RestartAltOutlinedIcon />}>
-              Re-encrypt Vault Key
+            <Button
+              disabled={isChangingMasterPassword}
+              type="submit"
+              variant="contained"
+              startIcon={<RestartAltOutlinedIcon />}
+            >
+              {isChangingMasterPassword ? 'Re-encrypting Vault Key' : 'Re-encrypt Vault Key'}
             </Button>
           </Stack>
         </Paper>
@@ -139,6 +244,11 @@ export function SettingsPage() {
           <Typography variant="h3" component="h2">
             Active sessions
           </Typography>
+          {sessionsLoading ? <PageState message="Loading sessions." /> : null}
+          {sessionsError ? <PageState message={sessionsError} tone="error" /> : null}
+          {!sessionsLoading && !sessionsError && sessions.length === 0 ? (
+            <PageState message="No active sessions." />
+          ) : null}
           {sessions.map((session) => (
             <Paper key={session.id} variant="outlined" sx={{ borderRadius: appTokens.radii.card, p: 2 }}>
               <Stack direction="row" justifyContent="space-between" spacing={1.5}>
@@ -155,24 +265,17 @@ export function SettingsPage() {
                 </Stack>
                 <Button
                   color="error"
-                  disabled={session.current}
+                  disabled={session.current || revokingSessionId === session.id}
                   startIcon={<LogoutOutlinedIcon />}
-                  onClick={() => setSessions((current) => current.filter((item) => item.id !== session.id))}
+                  onClick={() => handleRevokeSession(session.id)}
                 >
-                  Sign out
+                  {revokingSessionId === session.id ? 'Signing out' : 'Sign out'}
                 </Button>
               </Stack>
             </Paper>
           ))}
         </Stack>
       </Stack>
-
-      <Snackbar
-        autoHideDuration={2600}
-        onClose={() => setSnackbarMessage('')}
-        open={Boolean(snackbarMessage)}
-        message={snackbarMessage}
-      />
     </MobileAppLayout>
   );
 }

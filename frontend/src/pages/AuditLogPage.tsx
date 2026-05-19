@@ -1,7 +1,9 @@
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import { Chip, Paper, Stack, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 
-import { mockAuditLogs } from '../data/mockAuditLogs';
+import { PageState } from '../components/common/PageState';
+import { listAuditLogs, type AuditLogEntry } from '../features/audit/auditApi';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
 import { appTokens } from '../theme';
 
@@ -20,6 +22,40 @@ const actionLabels: Record<string, string> = {
 };
 
 export function AuditLogPage() {
+  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadLogs() {
+      setIsLoading(true);
+      setError('');
+      try {
+        const response = await listAuditLogs();
+        if (!ignore) {
+          setLogs(response.logs);
+        }
+      } catch (loadError) {
+        if (!ignore) {
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load audit logs.');
+          setLogs([]);
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadLogs();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
   return (
     <MobileAppLayout showBottomNav>
       <Stack spacing={2.5} sx={{ pt: 0.5 }}>
@@ -30,7 +66,12 @@ export function AuditLogPage() {
         </Stack>
 
         <Stack spacing={1.5}>
-          {mockAuditLogs.map((log) => (
+          {isLoading ? <PageState message="Loading audit logs." /> : null}
+          {error ? <PageState message={error} tone="error" /> : null}
+          {!isLoading && !error && logs.length === 0 ? (
+            <PageState message="No audit logs yet." />
+          ) : null}
+          {logs.map((log) => (
             <Paper
               key={log.id}
               variant="outlined"
@@ -53,7 +94,7 @@ export function AuditLogPage() {
                     </Typography>
                   </Stack>
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <Chip label={log.resourceType} size="small" />
+                    <Chip label={log.resourceType ?? 'event'} size="small" />
                     {Object.entries(log.metadata).map(([key, value]) => (
                       <Typography key={key} variant="body2" color="text.secondary" noWrap>
                         {key}: {value}

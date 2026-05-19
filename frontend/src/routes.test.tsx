@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import routePathsSource from './routePaths.ts?raw';
+import routesSource from './routes.tsx?raw';
 
 describe('application routes', () => {
   it('keeps all MVP mobile pages registered in the route map', () => {
@@ -22,5 +23,18 @@ describe('application routes', () => {
   it('uses parameterized item detail and edit routes for item navigation', () => {
     expect(routePathsSource).toContain("itemDetail: '/items/:itemId'");
     expect(routePathsSource).toContain("itemEdit: '/items/:itemId/edit'");
+  });
+
+  it('protects authenticated app routes and keeps auth entry routes public only', () => {
+    expect(routesSource).toContain('PublicOnlyRoute');
+    expect(routesSource).toContain('ProtectedRoute');
+    expect(routesSource).toContain('<LoginPage />');
+    expect(routesSource).toContain('<RegisterPage />');
+    expect(routesSource).toContain('<VaultPage />');
+    expect(routesSource).toContain('<ItemDetailPage />');
+    expect(routesSource).toContain('<ItemFormPage />');
+    expect(routesSource).toContain('<PasswordGeneratorPage />');
+    expect(routesSource).toContain('<AuditLogPage />');
+    expect(routesSource).toContain('<SettingsPage />');
   });
 });

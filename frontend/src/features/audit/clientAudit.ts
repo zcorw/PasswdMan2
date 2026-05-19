@@ -1,4 +1,10 @@
-export type ClientAuditAction = 'import.opened' | 'export.opened';
+export type ClientAuditAction =
+  | 'import.opened'
+  | 'export.opened'
+  | 'password.primary.viewed'
+  | 'password.primary.copied'
+  | 'password.secondary.viewed'
+  | 'password.secondary.copied';
 
 export interface ClientAuditEvent {
   id: string;

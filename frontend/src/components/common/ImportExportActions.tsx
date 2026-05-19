@@ -10,9 +10,16 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { recordClientAuditEvent, type ClientAuditAction } from '../../features/audit/clientAudit';
+import { recordAuditEvent } from '../../features/audit/auditApi';
+import { createExportBlob, createExportFile, createExportFilename } from '../../features/import-export/exportVault';
+import { parseImportedVaultFile, type ImportedVaultFile } from '../../features/import-export/importVault';
+import { useNotification } from '../../features/ui/notificationStore';
+import { createItem, listItems } from '../../features/vault/itemsApi';
+import { useVaultKey } from '../../features/vault/vaultKeyStore';
+import { encryptItemSecret } from '../../lib/vaultCrypto';
 
 interface ImportExportActionsProps {
   screen: 'vault' | 'settings';
@@ -27,10 +34,108 @@ interface ActivePrompt {
 
 export function ImportExportActions({ screen }: ImportExportActionsProps) {
   const [activePrompt, setActivePrompt] = useState<ActivePrompt | null>(null);
+  const [importDraft, setImportDraft] = useState<ImportedVaultFile | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { notify } = useNotification();
+  const { vaultKey } = useVaultKey();
 
   function openPrompt(prompt: ActivePrompt) {
     recordClientAuditEvent(prompt.action, { screen });
+    setImportDraft(null);
     setActivePrompt(prompt);
+  }
+
+  function closePrompt() {
+    setImportDraft(null);
+    setActivePrompt(null);
+  }
+
+  function handleImportClick() {
+    recordClientAuditEvent('import.opened', { screen });
+    fileInputRef.current?.click();
+  }
+
+  async function handleImportFile(file: File | undefined) {
+    if (!file) {
+      return;
+    }
+
+    try {
+      const parsedImport = parseImportedVaultFile(await file.text());
+      setImportDraft(parsedImport);
+      setActivePrompt({
+        action: 'import.opened',
+        title: 'Import vault data',
+        message: `${parsedImport.items.length} item(s) are ready to import.`,
+        severity: 'info',
+      });
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'Import file is invalid.', 'error');
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }
+
+  async function confirmImport() {
+    if (!importDraft) {
+      return;
+    }
+    if (!vaultKey) {
+      notify('Vault is locked. Unlock the vault before importing.', 'error');
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      for (const item of importDraft.items) {
+        await createItem({
+          encryptedSecret: encryptItemSecret(vaultKey, {
+            primaryPassword: item.primaryPassword,
+            secondaryPasswords: item.secondaryPasswords.map((password) => ({
+              id: password.id,
+              note: password.note,
+              password: password.value,
+              sortOrder: password.sortOrder,
+            })),
+          }),
+          title: item.title,
+          url: item.url || null,
+          username: item.username || null,
+        });
+      }
+      notify('Import completed.', 'success');
+      setImportDraft(null);
+      setActivePrompt(null);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'Import failed.', 'error');
+    } finally {
+      setIsImporting(false);
+    }
+  }
+
+  async function confirmExport() {
+    setIsExporting(true);
+    try {
+      const response = await listItems({ status: 'all', pageSize: 100 });
+      const exportFile = createExportFile(response.items);
+      const url = URL.createObjectURL(createExportBlob(exportFile));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = createExportFilename(exportFile.exportedAt);
+      link.click();
+      URL.revokeObjectURL(url);
+      void recordAuditEvent({ action: 'export.opened', metadata: { screen } }).catch(() => undefined);
+      notify('Export completed.', 'success');
+      setActivePrompt(null);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'Export failed.', 'error');
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   return (
@@ -39,17 +144,17 @@ export function ImportExportActions({ screen }: ImportExportActionsProps) {
         <Button
           startIcon={<FileUploadOutlinedIcon />}
           variant="outlined"
-          onClick={() =>
-            openPrompt({
-              action: 'import.opened',
-              title: 'Import vault data',
-              message: 'Import templates and field mapping will be confirmed later.',
-              severity: 'info',
-            })
-          }
+          onClick={handleImportClick}
         >
           Import
         </Button>
+        <input
+          ref={fileInputRef}
+          accept="application/json,.json"
+          hidden
+          type="file"
+          onChange={(event) => handleImportFile(event.target.files?.[0])}
+        />
         <Button
           startIcon={<FileDownloadOutlinedIcon />}
           variant="outlined"
@@ -77,7 +182,17 @@ export function ImportExportActions({ screen }: ImportExportActionsProps) {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setActivePrompt(null)}>Close</Button>
+          {importDraft ? (
+            <Button disabled={isImporting} onClick={confirmImport}>
+              {isImporting ? 'Importing' : 'Import'}
+            </Button>
+          ) : null}
+          {activePrompt?.action === 'export.opened' ? (
+            <Button disabled={isExporting} onClick={confirmExport}>
+              {isExporting ? 'Exporting' : 'Export'}
+            </Button>
+          ) : null}
+          <Button onClick={closePrompt}>Close</Button>
         </DialogActions>
       </Dialog>
     </>

@@ -15,13 +15,20 @@ import {
   loadRememberedAccount,
   saveRememberedAccount,
 } from '../lib/rememberAccount';
+import { useAuth } from '../features/auth/authStore';
+import { hasLoginFormErrors, validateLoginForm, type LoginFormErrors } from '../features/auth/loginValidation';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
 import { routes } from '../routePaths';
 import { appTokens } from '../theme';
 
 export function LoginPage() {
   const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberAccount, setRememberAccount] = useState(false);
+  const [formErrors, setFormErrors] = useState<LoginFormErrors>({});
+  const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,19 +46,35 @@ export function LoginPage() {
     }
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (rememberAccount) {
-      saveRememberedAccount(identifier);
-    } else {
-      clearRememberedAccount();
+    const nextErrors = validateLoginForm({ email: identifier, password });
+    setFormErrors(nextErrors);
+    setSubmitError('');
+
+    if (hasLoginFormErrors(nextErrors)) {
+      return;
     }
-    navigate(routes.vault);
+
+    setIsSubmitting(true);
+    try {
+      await login({ email: identifier, password });
+      if (rememberAccount) {
+        saveRememberedAccount(identifier);
+      } else {
+        clearRememberedAccount();
+      }
+      navigate(routes.vault);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Sign in failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <MobileAppLayout>
-      <Stack component="form" spacing={3} onSubmit={handleSubmit} sx={{ pt: 0.5 }}>
+      <Stack component="form" noValidate spacing={3} onSubmit={handleSubmit} sx={{ pt: 0.5 }}>
         <Stack spacing={1.5} sx={{ pt: 0.5 }}>
           <Typography variant="h1" component="h1">
             PasswdMan2
@@ -68,9 +91,14 @@ export function LoginPage() {
             </Typography>
             <TextField
               autoComplete="username"
+              error={Boolean(formErrors.email)}
               fullWidth
+              helperText={formErrors.email}
               name="email"
-              onChange={(event) => setIdentifier(event.target.value)}
+              onChange={(event) => {
+                setIdentifier(event.target.value);
+                setFormErrors((current) => ({ ...current, email: undefined }));
+              }}
               type="email"
               value={identifier}
             />
@@ -80,9 +108,26 @@ export function LoginPage() {
             <Typography variant="body2" color="text.secondary" fontWeight={500}>
               Password
             </Typography>
-            <TextField autoComplete="current-password" fullWidth name="password" type="password" />
+            <TextField
+              autoComplete="current-password"
+              error={Boolean(formErrors.password)}
+              fullWidth
+              helperText={formErrors.password}
+              name="password"
+              onChange={(event) => {
+                setPassword(event.target.value);
+                setFormErrors((current) => ({ ...current, password: undefined }));
+              }}
+              type="password"
+              value={password}
+            />
           </Stack>
         </Stack>
+        {submitError ? (
+          <Typography color="error" variant="body2">
+            {submitError}
+          </Typography>
+        ) : null}
 
         <FormControl sx={{ pt: 0.25 }}>
           <FormControlLabel
@@ -107,8 +152,8 @@ export function LoginPage() {
         </FormControl>
 
         <Stack spacing={2} sx={{ pt: 2 }}>
-          <Button type="submit" variant="contained" fullWidth sx={{ minHeight: 50 }}>
-            Sign in
+          <Button disabled={isSubmitting} type="submit" variant="contained" fullWidth sx={{ minHeight: 50 }}>
+            {isSubmitting ? 'Signing in' : 'Sign in'}
           </Button>
           <Button
             type="button"

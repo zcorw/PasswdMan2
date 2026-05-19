@@ -1,5 +1,5 @@
 import { IconButton, Tooltip } from '@mui/material';
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 
 import { appTokens } from '../../theme';
 
@@ -7,7 +7,7 @@ interface IconActionButtonProps {
   label: string;
   children: ReactNode;
   color?: 'primary' | 'secondary' | 'default' | 'error';
-  onClick?: () => void;
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 }
 
 export function IconActionButton({ label, children, color = 'default', onClick }: IconActionButtonProps) {

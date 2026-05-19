@@ -8,11 +8,13 @@ import { maskSecret } from '../../utils/vault';
 import { IconActionButton } from '../common/IconActionButton';
 
 interface SecondaryPasswordRowProps {
+  isVisible: boolean;
   password: SecondaryPassword;
   onCopy: (value: string) => void;
+  onToggleVisibility: () => void;
 }
 
-export function SecondaryPasswordRow({ password, onCopy }: SecondaryPasswordRowProps) {
+export function SecondaryPasswordRow({ isVisible, password, onCopy, onToggleVisibility }: SecondaryPasswordRowProps) {
   return (
     <Paper
       variant="outlined"
@@ -29,10 +31,10 @@ export function SecondaryPasswordRow({ password, onCopy }: SecondaryPasswordRowP
             {password.note}
           </Typography>
           <Typography variant="body1" color="text.primary" noWrap>
-            {maskSecret(password.value)}
+            {isVisible ? password.value : maskSecret(password.value)}
           </Typography>
         </Stack>
-        <IconActionButton label={`Show ${password.note}`} color="secondary">
+        <IconActionButton label={`Show ${password.note}`} color="secondary" onClick={onToggleVisibility}>
           <VisibilityOutlinedIcon fontSize="small" />
         </IconActionButton>
         <IconActionButton label={`Copy ${password.note}`} color="primary" onClick={() => onCopy(password.value)}>

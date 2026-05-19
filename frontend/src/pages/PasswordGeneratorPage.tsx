@@ -1,14 +1,12 @@
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import {
-  Alert,
   Button,
   Checkbox,
   FormControlLabel,
   IconButton,
   Paper,
   Slider,
-  Snackbar,
   Stack,
   TextField,
   Tooltip,
@@ -21,6 +19,7 @@ import {
   generatePassword,
   type PasswordGeneratorOptions,
 } from '../features/password-generator/passwordGenerator';
+import { useNotification } from '../features/ui/notificationStore';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
 import { appTokens } from '../theme';
 
@@ -37,7 +36,7 @@ const optionLabels: Array<{ key: PasswordOptionKey; label: string }> = [
 export function PasswordGeneratorPage() {
   const [options, setOptions] = useState<PasswordGeneratorOptions>(defaultPasswordGeneratorOptions);
   const [generatedPassword, setGeneratedPassword] = useState(() => generatePassword(defaultPasswordGeneratorOptions));
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const { notify } = useNotification();
 
   const selectedSetCount = useMemo(
     () =>
@@ -50,7 +49,11 @@ export function PasswordGeneratorPage() {
   }
 
   function handleGenerate(nextOptions = options) {
-    setGeneratedPassword(generatePassword(nextOptions));
+    try {
+      setGeneratedPassword(generatePassword(nextOptions));
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'Unable to generate password.', 'error');
+    }
   }
 
   function handleLengthChange(_: Event, nextLength: number | number[]) {
@@ -60,9 +63,16 @@ export function PasswordGeneratorPage() {
     handleGenerate(nextOptions);
   }
 
-  function handleCopy() {
-    void navigator.clipboard?.writeText(generatedPassword);
-    setSnackbarOpen(true);
+  async function handleCopy() {
+    try {
+      if (!navigator.clipboard) {
+        throw new Error('Clipboard is unavailable.');
+      }
+      await navigator.clipboard.writeText(generatedPassword);
+      notify('Password copied.', 'success');
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'Copy failed.', 'error');
+    }
   }
 
   return (
@@ -145,16 +155,6 @@ export function PasswordGeneratorPage() {
           Generate
         </Button>
       </Stack>
-
-      <Snackbar
-        autoHideDuration={2200}
-        onClose={() => setSnackbarOpen(false)}
-        open={snackbarOpen}
-      >
-        <Alert severity="success" variant="filled">
-          Password copied.
-        </Alert>
-      </Snackbar>
     </MobileAppLayout>
   );
 }
