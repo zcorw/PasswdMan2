@@ -83,6 +83,9 @@ jobs:
           mkdir -p deploy-artifact/frontend deploy-artifact/backend deploy-artifact/nginx
 
           cp docker-compose.yml deploy-artifact/docker-compose.yml
+          cp backup-postgres.sh deploy-artifact/backup-postgres.sh
+          cp restore-postgres-test.sh deploy-artifact/restore-postgres-test.sh
+          chmod +x deploy-artifact/backup-postgres.sh deploy-artifact/restore-postgres-test.sh
           cp -R nginx/conf.d deploy-artifact/nginx/conf.d
 
           cp -R backend/app deploy-artifact/backend/app
@@ -107,6 +110,7 @@ jobs:
 
           This artifact contains the files required to build and run the Docker Compose stack:
           - docker-compose.yml
+          - backup and restore scripts
           - backend application, Dockerfile, requirements, and Alembic files
           - prebuilt frontend/dist and a runtime-only frontend Dockerfile
           - nginx reverse proxy configuration
