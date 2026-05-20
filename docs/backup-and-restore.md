@@ -70,9 +70,13 @@ cd /opt/passwdman2
 
 ```text
 /opt/passwdman2-backups/passwdman2-postgres-YYYYmmddTHHMMSSZ.dump
+/opt/passwdman2-backups/config/YYYYmmddTHHMMSSZ/env
+/opt/passwdman2-backups/config/YYYYmmddTHHMMSSZ/docker-compose.yml
 ```
 
 脚本不会创建 `latest.dump` 软链接，方便把备份目录同步到不支持软链接的存储，例如 Google Drive。
+
+其中 `config/YYYYmmddTHHMMSSZ/` 会保存当次备份对应的 `.env` 和 `docker-compose.yml`。如果 VPS 崩溃，可以从同一时间戳的配置备份中恢复运行配置。
 
 ## 设置定时备份
 
@@ -173,6 +177,7 @@ docker stop passwdman2-restore-test-db
 ## 安全建议
 
 - 备份文件包含加密 vault 数据和账号元数据，应按敏感数据处理。
+- `config/` 目录中的 `env` 文件包含数据库密码，应按敏感数据处理。
 - 备份目录权限建议为 `700`，备份文件权限建议为 `600`。
 - 不要把 `.env`、备份文件、数据库 dump 上传到 Git。
 - 建议额外同步一份备份到另一台服务器或对象存储。

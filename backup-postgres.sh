@@ -33,6 +33,7 @@ cd "$SCRIPT_DIR"
 
 TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 BACKUP_FILE="$BACKUP_DIR/passwdman2-postgres-$TIMESTAMP.dump"
+CONFIG_BACKUP_DIR="$BACKUP_DIR/config/$TIMESTAMP"
 
 echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Starting backup."
 echo "Backup target: $BACKUP_FILE"
@@ -45,10 +46,23 @@ docker compose exec -T postgres pg_dump \
 
 chmod 600 "$BACKUP_FILE"
 
+mkdir -p "$CONFIG_BACKUP_DIR"
+chmod 700 "$BACKUP_DIR/config" "$CONFIG_BACKUP_DIR"
+cp "$ENV_FILE" "$CONFIG_BACKUP_DIR/env"
+cp "$COMPOSE_FILE" "$CONFIG_BACKUP_DIR/docker-compose.yml"
+chmod 600 "$CONFIG_BACKUP_DIR/env" "$CONFIG_BACKUP_DIR/docker-compose.yml"
+
 find "$BACKUP_DIR" \
   -name "passwdman2-postgres-*.dump" \
   -type f \
   -mtime +"$BACKUP_RETENTION_DAYS" \
   -delete
+
+find "$BACKUP_DIR/config" \
+  -mindepth 1 \
+  -maxdepth 1 \
+  -type d \
+  -mtime +"$BACKUP_RETENTION_DAYS" \
+  -exec rm -rf {} +
 
 echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Backup completed."
