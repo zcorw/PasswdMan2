@@ -70,10 +70,9 @@ cd /opt/passwdman2
 
 ```text
 /opt/passwdman2-backups/passwdman2-postgres-YYYYmmddTHHMMSSZ.dump
-/opt/passwdman2-backups/passwdman2-postgres-latest.dump
 ```
 
-`passwdman2-postgres-latest.dump` 是指向最新备份的软链接。
+脚本不会创建 `latest.dump` 软链接，方便把备份目录同步到不支持软链接的存储，例如 Google Drive。
 
 ## 设置定时备份
 
@@ -127,6 +126,8 @@ crontab -l
 cd /opt/passwdman2
 ./restore-postgres-test.sh
 ```
+
+不传参数时，脚本会从 `BACKUP_DIR` 中查找 `passwdman2-postgres-*.dump`，按文件名排序后使用最后一条记录。备份文件名包含 UTC 时间戳，所以最后一条就是最新备份。
 
 使用指定备份文件演习：
 

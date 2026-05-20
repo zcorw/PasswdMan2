@@ -24,12 +24,29 @@ BACKUP_DIR="${BACKUP_DIR:-$SCRIPT_DIR/backups}"
 POSTGRES_DB="${POSTGRES_DB:-passwdman2}"
 POSTGRES_USER="${POSTGRES_USER:-passwdman2}"
 
-BACKUP_FILE="${1:-$BACKUP_DIR/passwdman2-postgres-latest.dump}"
+BACKUP_FILE="${1:-}"
 TEST_CONTAINER="${RESTORE_TEST_CONTAINER:-passwdman2-restore-test-db}"
 TEST_DB="${RESTORE_TEST_DB:-passwdman2_restore_test}"
 TEST_USER="${RESTORE_TEST_USER:-$POSTGRES_USER}"
 TEST_PASSWORD="${RESTORE_TEST_PASSWORD:-restore_test_password}"
 TEST_PORT="${RESTORE_TEST_PORT:-15432}"
+
+if [ -z "$BACKUP_FILE" ]; then
+  BACKUP_FILE="$(
+    find "$BACKUP_DIR" \
+      -maxdepth 1 \
+      -name "passwdman2-postgres-*.dump" \
+      -type f \
+      | sort \
+      | tail -n 1
+  )"
+fi
+
+if [ -z "$BACKUP_FILE" ]; then
+  echo "No backup files found in: $BACKUP_DIR" >&2
+  echo "Usage: $0 [/path/to/passwdman2-postgres-YYYYmmddTHHMMSSZ.dump]" >&2
+  exit 1
+fi
 
 if [ ! -f "$BACKUP_FILE" ]; then
   echo "Backup file does not exist: $BACKUP_FILE" >&2

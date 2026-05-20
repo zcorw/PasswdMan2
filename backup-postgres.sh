@@ -33,7 +33,6 @@ cd "$SCRIPT_DIR"
 
 TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 BACKUP_FILE="$BACKUP_DIR/passwdman2-postgres-$TIMESTAMP.dump"
-LATEST_FILE="$BACKUP_DIR/passwdman2-postgres-latest.dump"
 
 echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Starting backup."
 echo "Backup target: $BACKUP_FILE"
@@ -46,13 +45,10 @@ docker compose exec -T postgres pg_dump \
 
 chmod 600 "$BACKUP_FILE"
 
-ln -sfn "$BACKUP_FILE" "$LATEST_FILE"
-
 find "$BACKUP_DIR" \
   -name "passwdman2-postgres-*.dump" \
   -type f \
   -mtime +"$BACKUP_RETENTION_DAYS" \
-  ! -name "passwdman2-postgres-latest.dump" \
   -delete
 
 echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Backup completed."
