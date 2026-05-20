@@ -36,9 +36,8 @@ docker compose up --build
 
 Default local URLs:
 
-- Frontend through Nginx: `http://localhost:8080`
-- Backend through Nginx: `http://localhost:8080/api/health`
-- Backend direct: `http://localhost:8000/api/health`
+- Frontend through Nginx: `http://localhost:6084`
+- Backend through Nginx: `http://localhost:6084/api/health`
 - Vite dev server: `http://localhost:5173`
 
 ## Validation

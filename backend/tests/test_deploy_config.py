@@ -24,3 +24,13 @@ def test_compose_database_url_uses_environment_variables() -> None:
     assert "DATABASE_URL: postgresql+psycopg://${POSTGRES_USER" in compose
     assert "SESSION_COOKIE_SECURE" in compose
     assert "passwdman2_dev_password@postgres" not in compose
+
+
+def test_compose_only_exposes_nginx_to_host() -> None:
+    compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+
+    assert '- "6084:80"' in compose
+    assert '- "5432:5432"' not in compose
+    assert '- "8000:8000"' not in compose
+    assert '- "5173:80"' not in compose
+    assert '- "8080:80"' not in compose

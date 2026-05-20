@@ -5,8 +5,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-passwdman2}
       POSTGRES_USER: ${POSTGRES_USER:-passwdman2}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-passwdman2_dev_password}
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -21,20 +19,16 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-development}
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-passwdman2}:${POSTGRES_PASSWORD:-passwdman2_dev_password}@${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-passwdman2}
-      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost:5173,http://localhost:6084}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE:-lax}
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "8000:8000"
 
   frontend:
     build:
       context: ./frontend
-    ports:
-      - "5173:80"
 
   nginx:
     image: nginx:1.27-alpine
@@ -42,7 +36,7 @@ services:
       - backend
       - frontend
     ports:
-      - "8080:80"
+      - "6084:80"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
 

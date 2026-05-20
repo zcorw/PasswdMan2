@@ -240,7 +240,7 @@ On the server:
 cd /opt/passwdman2
 ls -la
 docker compose ps
-curl -fsS http://localhost:8080/api/health
+curl -fsS http://localhost:6084/api/health
 ```
 
 From a browser:
