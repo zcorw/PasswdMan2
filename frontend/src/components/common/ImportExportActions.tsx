@@ -14,7 +14,7 @@ import { useRef, useState } from 'react';
 
 import { recordClientAuditEvent, type ClientAuditAction } from '../../features/audit/clientAudit';
 import { recordAuditEvent } from '../../features/audit/auditApi';
-import { createExportBlob, createExportFile, createExportFilename } from '../../features/import-export/exportVault';
+import { createCsvExport, createCsvExportBlob, createExportFilename } from '../../features/import-export/exportVault';
 import { parseImportedVaultFile, type ImportedVaultFile } from '../../features/import-export/importVault';
 import { useNotification } from '../../features/ui/notificationStore';
 import { createItem, listItems } from '../../features/vault/itemsApi';
@@ -94,14 +94,19 @@ export function ImportExportActions({ screen }: ImportExportActionsProps) {
       for (const item of importDraft.items) {
         await createItem({
           encryptedSecret: encryptItemSecret(vaultKey, {
+            customFields: item.customFields,
             primaryPassword: item.primaryPassword,
+            secureNote: item.secureNote,
             secondaryPasswords: item.secondaryPasswords.map((password) => ({
               id: password.id,
               note: password.note,
               password: password.value,
               sortOrder: password.sortOrder,
             })),
+            totpSecret: item.totpSecret,
           }),
+          favorite: item.favorite,
+          status: item.status,
           title: item.title,
           url: item.url || null,
           username: item.username || null,
@@ -118,14 +123,20 @@ export function ImportExportActions({ screen }: ImportExportActionsProps) {
   }
 
   async function confirmExport() {
+    if (!vaultKey) {
+      notify('Vault is locked. Unlock the vault before exporting.', 'error');
+      return;
+    }
+
     setIsExporting(true);
     try {
       const response = await listItems({ status: 'all', pageSize: 100 });
-      const exportFile = createExportFile(response.items);
-      const url = URL.createObjectURL(createExportBlob(exportFile));
+      const exportedAt = new Date().toISOString();
+      const csv = createCsvExport(response.items, vaultKey);
+      const url = URL.createObjectURL(createCsvExportBlob(csv));
       const link = document.createElement('a');
       link.href = url;
-      link.download = createExportFilename(exportFile.exportedAt);
+      link.download = createExportFilename(exportedAt);
       link.click();
       URL.revokeObjectURL(url);
       void recordAuditEvent({ action: 'export.opened', metadata: { screen } }).catch(() => undefined);
@@ -150,7 +161,7 @@ export function ImportExportActions({ screen }: ImportExportActionsProps) {
         </Button>
         <input
           ref={fileInputRef}
-          accept="application/json,.json"
+          accept="text/csv,application/json,.csv,.json"
           hidden
           type="file"
           onChange={(event) => handleImportFile(event.target.files?.[0])}
