@@ -26,14 +26,18 @@ export function BottomNav() {
     <Paper
       elevation={0}
       sx={{
-        position: 'absolute',
+        position: 'fixed',
         bottom: 0,
-        left: 0,
-        right: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%',
+        maxWidth: appTokens.layout.mobileFrameWidth,
         height: appTokens.layout.bottomNavHeight,
+        bgcolor: 'background.paper',
         borderTop: '1px solid',
         borderColor: 'divider',
         borderRadius: 0,
+        zIndex: (theme) => theme.zIndex.appBar,
       }}
     >
       <BottomNavigation
