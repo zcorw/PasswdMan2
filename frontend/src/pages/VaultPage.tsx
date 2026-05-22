@@ -15,6 +15,7 @@ import { mapApiItemsToVaultItems } from '../features/vault/itemMapper';
 import { useVaultKey } from '../features/vault/vaultKeyStore';
 import { MobileAppLayout } from '../layouts/MobileAppLayout';
 import { routes } from '../routePaths';
+import { appTokens } from '../theme';
 import type { VaultItem } from '../types/vault';
 
 export function VaultPage() {
@@ -196,7 +197,17 @@ export function VaultPage() {
         </Stack>
       </Stack>
 
-      <Box sx={{ position: 'absolute', right: 24, bottom: 150 }}>
+      <Box
+        sx={{
+          position: 'fixed',
+          right: {
+            xs: 24,
+            sm: `calc((100vw - ${appTokens.layout.mobileFrameWidth}px) / 2 + 24px)`,
+          },
+          bottom: appTokens.layout.bottomNavHeight + 24,
+          zIndex: (theme) => theme.zIndex.appBar + 1,
+        }}
+      >
         <Fab
           color="primary"
           aria-label="Create new item"
