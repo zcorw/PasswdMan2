@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { vaultKeyReducer } from './vaultKeyStore';
+import {
+  VAULT_IDLE_LOCK_TIMEOUT_MS,
+  getVaultIdleLockDelay,
+  hasVaultIdleTimedOut,
+  vaultKeyReducer,
+} from './vaultKeyStore';
 import type { VaultKeyState } from './vaultTypes';
 
 const lockedState: VaultKeyState = {
@@ -60,5 +65,38 @@ describe('vaultKeyStore', () => {
       vaultKey: null,
     });
   });
-});
 
+  it('uses a five minute idle lock timeout', () => {
+    expect(VAULT_IDLE_LOCK_TIMEOUT_MS).toBe(5 * 60 * 1000);
+  });
+
+  it('locks immediately when vault activity is past the idle timeout', () => {
+    expect(
+      getVaultIdleLockDelay({
+        lastActivityAt: 1_000,
+        now: 1_000 + VAULT_IDLE_LOCK_TIMEOUT_MS + 1,
+        timeoutMs: VAULT_IDLE_LOCK_TIMEOUT_MS,
+      }),
+    ).toBe(0);
+  });
+
+  it('returns the remaining delay when vault activity is still fresh', () => {
+    expect(
+      getVaultIdleLockDelay({
+        lastActivityAt: 1_000,
+        now: 1_000 + 30_000,
+        timeoutMs: VAULT_IDLE_LOCK_TIMEOUT_MS,
+      }),
+    ).toBe(VAULT_IDLE_LOCK_TIMEOUT_MS - 30_000);
+  });
+
+  it('treats the first activity after a long pause as timed out', () => {
+    expect(
+      hasVaultIdleTimedOut({
+        lastActivityAt: 1_000,
+        now: 1_000 + VAULT_IDLE_LOCK_TIMEOUT_MS + 1,
+        timeoutMs: VAULT_IDLE_LOCK_TIMEOUT_MS,
+      }),
+    ).toBe(true);
+  });
+});

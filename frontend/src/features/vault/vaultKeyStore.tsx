@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
   type ReactNode,
 } from 'react';
 
@@ -15,6 +16,10 @@ import {
 } from '../../lib/vaultCrypto';
 import { useAuth } from '../auth/authStore';
 import type { VaultKeyState } from './vaultTypes';
+
+export const VAULT_IDLE_LOCK_TIMEOUT_MS = 5 * 60 * 1000;
+
+const vaultActivityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'] as const;
 
 type VaultKeyAction =
   | { type: 'clear' }
@@ -36,6 +41,24 @@ const initialVaultKeyState: VaultKeyState = {
 };
 
 const VaultKeyContext = createContext<VaultKeyContextValue | null>(null);
+
+interface VaultIdleLockDelayParams {
+  lastActivityAt: number;
+  now: number;
+  timeoutMs: number;
+}
+
+export function getVaultIdleLockDelay({
+  lastActivityAt,
+  now,
+  timeoutMs,
+}: VaultIdleLockDelayParams): number {
+  return Math.max(timeoutMs - (now - lastActivityAt), 0);
+}
+
+export function hasVaultIdleTimedOut(params: VaultIdleLockDelayParams): boolean {
+  return getVaultIdleLockDelay(params) === 0;
+}
 
 export function vaultKeyReducer(state: VaultKeyState, action: VaultKeyAction): VaultKeyState {
   switch (action.type) {
@@ -63,6 +86,7 @@ export function vaultKeyReducer(state: VaultKeyState, action: VaultKeyAction): V
 export function VaultKeyProvider({ children }: { children: ReactNode }) {
   const { status: authStatus } = useAuth();
   const [state, dispatch] = useReducer(vaultKeyReducer, initialVaultKeyState);
+  const lastActivityAtRef = useRef(Date.now());
 
   const clearVaultKey = useCallback(() => {
     dispatch({ type: 'clear' });
@@ -73,6 +97,75 @@ export function VaultKeyProvider({ children }: { children: ReactNode }) {
       clearVaultKey();
     }
   }, [authStatus, clearVaultKey]);
+
+  useEffect(() => {
+    if (state.status !== 'unlocked') {
+      return undefined;
+    }
+
+    let lockTimerId: number | undefined;
+
+    function clearLockTimer() {
+      if (lockTimerId !== undefined) {
+        window.clearTimeout(lockTimerId);
+        lockTimerId = undefined;
+      }
+    }
+
+    function scheduleLockCheck() {
+      clearLockTimer();
+      const delay = getVaultIdleLockDelay({
+        lastActivityAt: lastActivityAtRef.current,
+        now: Date.now(),
+        timeoutMs: VAULT_IDLE_LOCK_TIMEOUT_MS,
+      });
+
+      if (delay === 0) {
+        clearVaultKey();
+        return;
+      }
+
+      lockTimerId = window.setTimeout(scheduleLockCheck, delay);
+    }
+
+    function recordVaultActivity() {
+      const now = Date.now();
+      if (
+        hasVaultIdleTimedOut({
+          lastActivityAt: lastActivityAtRef.current,
+          now,
+          timeoutMs: VAULT_IDLE_LOCK_TIMEOUT_MS,
+        })
+      ) {
+        clearVaultKey();
+        return;
+      }
+
+      lastActivityAtRef.current = now;
+      scheduleLockCheck();
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        scheduleLockCheck();
+      }
+    }
+
+    lastActivityAtRef.current = Date.now();
+    scheduleLockCheck();
+    vaultActivityEvents.forEach((eventName) => {
+      window.addEventListener(eventName, recordVaultActivity, { passive: true });
+    });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearLockTimer();
+      vaultActivityEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, recordVaultActivity);
+      });
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [clearVaultKey, state.status]);
 
   const setUnlockedVaultKey = useCallback((vaultKey: Uint8Array, encryptedVaultKey: string) => {
     dispatch({ encryptedVaultKey, type: 'unlocked', vaultKey });
@@ -129,4 +222,3 @@ function getVaultKeyErrorMessage(error: unknown): string {
   }
   return 'Vault Key operation failed';
 }
-
