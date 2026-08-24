@@ -86,7 +86,9 @@ export function AppRoutes() {
         path={routes.generator}
         element={
           <ProtectedRoute>
-            <PasswordGeneratorPage />
+            <VaultUnlockedRoute>
+              <PasswordGeneratorPage />
+            </VaultUnlockedRoute>
           </ProtectedRoute>
         }
       />
@@ -94,7 +96,9 @@ export function AppRoutes() {
         path={routes.auditLog}
         element={
           <ProtectedRoute>
-            <AuditLogPage />
+            <VaultUnlockedRoute>
+              <AuditLogPage />
+            </VaultUnlockedRoute>
           </ProtectedRoute>
         }
       />
@@ -102,7 +106,9 @@ export function AppRoutes() {
         path={routes.settings}
         element={
           <ProtectedRoute>
-            <SettingsPage />
+            <VaultUnlockedRoute>
+              <SettingsPage />
+            </VaultUnlockedRoute>
           </ProtectedRoute>
         }
       />

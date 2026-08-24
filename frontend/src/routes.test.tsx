@@ -40,4 +40,22 @@ describe('application routes', () => {
     expect(routesSource).toContain('<AuditLogPage />');
     expect(routesSource).toContain('<SettingsPage />');
   });
+
+  it('requires vault unlock before any authenticated app page can be operated', () => {
+    [
+      '<VaultPage />',
+      '<ItemDetailPage />',
+      '<ItemFormPage />',
+      '<PasswordGeneratorPage />',
+      '<AuditLogPage />',
+      '<SettingsPage />',
+    ].forEach((pageComponent) => {
+      const pageIndex = routesSource.indexOf(pageComponent);
+      const guardIndex = routesSource.lastIndexOf('<VaultUnlockedRoute>', pageIndex);
+      const protectedRouteIndex = routesSource.lastIndexOf('<ProtectedRoute>', pageIndex);
+
+      expect(pageIndex).toBeGreaterThan(-1);
+      expect(guardIndex).toBeGreaterThan(protectedRouteIndex);
+    });
+  });
 });
