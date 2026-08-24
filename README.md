@@ -1,6 +1,23 @@
 # PasswdMan2
 
-PasswdMan2 is a personal password manager PWA. The MVP is scoped to normal users only and excludes teams, admins, sharing, browser extensions, native apps, full import/export, and full offline vault support.
+PasswdMan2 is a personal password manager PWA.
+
+## Project Lineage
+
+PasswdMan2 is the second-generation implementation of the PasswdMan
+password manager.
+
+The original version used a separated frontend/backend architecture:
+
+| Version | Repository                                                    | Role                   | Stack                     |
+| ------- | ------------------------------------------------------------- | ---------------------- | ------------------------- |
+| v1      | [PasswdMan-ui](https://github.com/zcorw/PasswdMan-ui)         | Frontend               | Vue 3, TypeScript, Vite   |
+| v1      | [PasswdMan-server](https://github.com/zcorw/PasswdMan-server) | Backend                | NestJS, TypeScript, MySQL |
+| v2      | **PasswdMan2**                                                | Full-stack application | React, FastAPI, PWA       |
+
+PasswdMan2 is a redesign rather than an in-place upgrade. It consolidates
+the frontend and backend into a single repository and revisits the
+application architecture, UI, security model, and product scope.
 
 ## Project Layout
 
@@ -80,10 +97,6 @@ yarn build
 cd ..
 git diff --check
 ```
-
-## MVP Boundary
-
-Post-MVP features are tracked in `docs/backlog.md`. Tags, full import/export templates, MFA, WebAuthn, password health scoring, breach detection, browser extensions, and native apps are outside the current MVP acceptance scope.
 
 ## Dependency Policy
 
