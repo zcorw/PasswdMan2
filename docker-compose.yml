@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-passwdman2}
       POSTGRES_USER: ${POSTGRES_USER:-passwdman2}
@@ -14,6 +15,7 @@ services:
       retries: 5
 
   backend:
+    restart: unless-stopped
     build:
       context: ./backend
     environment:
@@ -27,11 +29,13 @@ services:
         condition: service_healthy
 
   frontend:
+    restart: unless-stopped
     build:
       context: ./frontend
 
   nginx:
     image: nginx:1.27-alpine
+    restart: unless-stopped
     depends_on:
       - backend
       - frontend
